@@ -34,6 +34,7 @@ void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg) {
   switch (N2kMsg.PGN) {
     case 126992UL: HandleSystemTime(N2kMsg);
     case 127250UL: HandleHeading(N2kMsg);
+    case 127251UL: HandleRateOfTurn(N2kMsg);
     case 127258UL: HandleVariation(N2kMsg);
     case 128259UL: HandleBoatSpeed(N2kMsg);
     case 128267UL: HandleDepth(N2kMsg);
@@ -68,6 +69,20 @@ tNMEA0183Msg NMEA0183Msg;
   if ( ParseN2kSystemTime(N2kMsg, SID, DaysSince1970, SecondsSinceMidnight, TimeSource) ) {
     LastSystemTime=millis();
     //TODO: Use NMEA0183 message to send date/time
+  }
+}
+
+//*****************************************************************************
+void tN2kDataToNMEA0183::HandleRateOfTurn(const tN2kMsg &N2kMsg) {
+unsigned char SID;
+double RateOfTurn;
+tNMEA0183Msg NMEA0183Msg;
+
+  if ( ParseN2kRateOfTurn(N2kMsg,SID,RateOfTurn) ) {
+    tNMEA0183Msg NMEA0183Msg;
+    if ( NMEA0183SetROT(NMEA0183Msg, RateOfTurn) ) {
+      SendMessage(NMEA0183Msg);
+    }
   }
 }
 

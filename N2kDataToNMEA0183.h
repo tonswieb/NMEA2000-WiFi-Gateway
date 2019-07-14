@@ -56,6 +56,7 @@ protected:
 protected:
   void HandleSystemTime(const tN2kMsg &N2kMsg); // 126992
   void HandleHeading(const tN2kMsg &N2kMsg); // 127250
+  void HandleRateOfTurn(const tN2kMsg &N2kMsg); // 127251
   void HandleVariation(const tN2kMsg &N2kMsg); // 127258
   void HandleBoatSpeed(const tN2kMsg &N2kMsg); // 128259
   void HandleDepth(const tN2kMsg &N2kMsg); // 128267
