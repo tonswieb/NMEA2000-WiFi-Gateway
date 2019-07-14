@@ -21,22 +21,6 @@ bool ResetWiFiSettings=true; // If you have tested other code in your module, it
 
 tN2kDataToNMEA0183 tN2kDataToNMEA0183(&NMEA2000, 0);
 
-// Set the information for other bus devices, which messages we support
-const unsigned long TransmitMessages[] PROGMEM={0};
-const unsigned long ReceiveMessages[] PROGMEM={/*126992L,*/ // System time
-                                              60928L,
-                                              126992UL, //System time
-                                              126993L,
-                                              127250L, // Heading
-                                              127258L, // Magnetic variation
-                                              128259UL,// Boat speed
-                                              128267UL,// Depth
-                                              129025UL,// Position
-                                              129026L, // COG and SOG
-                                              129029L, // GNSS
-                                              130306L, // Wind
-                                              0};
-
 // Forward declarations
 void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg);
 void InitNMEA2000();
@@ -80,23 +64,8 @@ void InitNMEA2000() {
   NMEA2000.SetN2kCANMsgBufSize(8);
   NMEA2000.SetN2kCANReceiveFrameBufSize(100);
   NMEA2000.SetForwardStream(&Serial);  // PC output on due native port
-  NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text
-  NMEA2000.SetProductInformation("00000002", // Manufacturer's Model serial code
-                                 130, // Manufacturer's product code
-                                 "N2k->NMEA0183 WiFi",  // Manufacturer's Model ID
-                                 "1.0.0.1 (2018-04-08)",  // Manufacturer's Software version code
-                                 "1.0.0.0 (2018-04-08)" // Manufacturer's Model version
-                                 );
-  // Det device information
-  NMEA2000.SetDeviceInformation(112234, // Unique number. Use e.g. Serial number.
-                                130, // Device function=PC Gateway. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
-                                25, // Device class=Inter/Intranetwork Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
-                                2046 // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf
-                               );
-                               
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode,32);
-  NMEA2000.ExtendTransmitMessages(TransmitMessages);
-  NMEA2000.ExtendReceiveMessages(ReceiveMessages);
+  NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text                               
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenOnly);
   NMEA2000.AttachMsgHandler(&tN2kDataToNMEA0183); // NMEA 2000 -> NMEA 0183 conversion
   
   tN2kDataToNMEA0183.SetSendNMEA0183MessageCallback(SendNMEA0183Message);
