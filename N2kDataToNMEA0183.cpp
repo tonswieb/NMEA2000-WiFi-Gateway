@@ -40,8 +40,6 @@ void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg) {
     case 129025UL: HandlePosition(N2kMsg);
     case 129026UL: HandleCOGSOG(N2kMsg);
     case 129029UL: HandleGNSS(N2kMsg);
-//    case 129038UL: HanldeClassAPositionReport(N2kMsg);
-//    case 129039UL: HanldeClassBPositionReport(N2kMsg);
     case 130306UL: HandleWind(N2kMsg);
   }
 }
@@ -218,60 +216,3 @@ void tN2kDataToNMEA0183::SendRMC() {
       SetNextRMCSend();
     }
 }
-
-////*****************************************************************************
-//void tN2kDataToNMEA0183::HanldeClassAPositionReport(const tN2kMsg &N2kMsg) {
-//
-//uint8_t MessageID;
-//
-//tN2kAISRepeat Repeat;
-//uint32_t UserID;
-//tN2kAISNavStatus NavStatus;
-//double SOG;
-//double ROT;
-//bool Accuracy;
-//double Longitude;
-//double Latitude;
-//double COG;
-//double Heading;
-//uint8_t Seconds;
-//bool RAIM;
-//
-//tNMEA0183Msg NMEA0183Msg;
-//
-////  if ( ParseN2kAISClassAPosition(N2kMsg, MessageID, Repeat, UserID, Latitude, Longitude, Accuracy, RAIM, Seconds, COG, SOG, Heading, ROT, NavStatus) ) {
-////    if ( NMEA0183SetVTG(NMEA0183Msg,COG,MCOG,SOG) ) {
-////      SendMessage(NMEA0183Msg);
-////    }
-////  }
-//}
-//
-////*****************************************************************************
-//void tN2kDataToNMEA0183::HanldeClassBPositionReport(const tN2kMsg &N2kMsg) {
-//
-//uint8_t MessageID;
-//tN2kAISRepeat Repeat;
-//uint32_t UserID;
-//double Latitude;
-//double Longitude;
-//bool Accuracy;
-//bool RAIM;
-//uint8_t Seconds;
-//double COG;
-//double SOG;
-//double Heading;
-//tN2kAISUnit Unit;
-//bool Display;
-//bool DSC;
-//bool Band;
-//bool Msg22;
-//tN2kAISMode Mode;
-//bool State;
-//tNMEA0183Msg NMEA0183Msg;
-//
-////  if ( ParseN2kAISClassBPosition(N2kMsg, MessageID, Repeat, UserID, Latitude, Longitude, Accuracy, RAIM, Seconds, COG, SOG, Heading, Unit, Display, DSC, Band, Msg22, Mode, State) ) {
-////    if ( NMEA0183SetVTG(NMEA0183Msg,COG,MCOG,SOG) ) {
-////      SendMessage(NMEA0183Msg);
-////    }
-////  }
-//}

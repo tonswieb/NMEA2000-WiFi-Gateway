@@ -62,8 +62,6 @@ protected:
   void HandlePosition(const tN2kMsg &N2kMsg); // 129025
   void HandleCOGSOG(const tN2kMsg &N2kMsg); // 129026
   void HandleGNSS(const tN2kMsg &N2kMsg); // 129029
-//  void HanldeClassAPositionReport(const tN2kMsg &N2kMsg); // 129038
-//  void HanldeClassBPositionReport(const tN2kMsg &N2kMsg); // 129039
   void HandleWind(const tN2kMsg &N2kMsg); // 130306
   void SetNextRMCSend() { NextRMCSend=millis()+RMCPeriod; }
   void SendRMC();
