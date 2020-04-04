@@ -2,6 +2,7 @@
 //
 // The code has been tested with ESP32.
 
+#define ESP32_NMEA38400_RX 5
 #define ESP32_CAN_TX_PIN GPIO_NUM_12
 #define ESP32_CAN_RX_PIN GPIO_NUM_13
 #include <NMEA2000_CAN.h>
@@ -43,6 +44,7 @@ void setup() {
   if ( ResetWiFiSettings ) ResetWiFiSettingsOnNvs();
 
   Serial.begin(115200);
+  Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX);
 
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
   delay(1000);
@@ -52,7 +54,7 @@ void setup() {
   InitNMEA2000();
   Serial.println("NMEA200 initialized.");
 
-  aisReceiver = new SerialToNMEA0183(&Serial);
+  aisReceiver = new SerialToNMEA0183(&Serial1);
 }
 
 //*****************************************************************************
