@@ -10,12 +10,14 @@
 #include <nvs_flash.h>
 #include "N2kDataToNMEA0183.h"
 #include <WiFiUdp.h>
+#include "SerialToNMEA0183.h"
 
 // Define your default settings here
 const char *ssid = "ARISTO"; //Replace with WIFI name.
 const char *udpAddress = "192.168.4.255";
 const int port = 9876;
 WiFiUDP udp;
+SerialToNMEA0183* aisReceiver;
 
 bool ResetWiFiSettings=true; // If you have tested other code in your module, it may have saved settings and have difficulties to make connection.
 
@@ -49,14 +51,15 @@ void setup() {
   
   InitNMEA2000();
   Serial.println("NMEA200 initialized.");
+
+  aisReceiver = new SerialToNMEA0183(&Serial);
 }
 
 //*****************************************************************************
 void loop() {
   NMEA2000.ParseMessages();
   tN2kDataToNMEA0183.Update();
-  // Dummy to empty input buffer to avoid board to stuck with e.g. NMEA Reader
-  if ( Serial.available() ) { Serial.read(); } 
+  SendNMEA0183Message(aisReceiver);
 }
 
 //*****************************************************************************
@@ -82,4 +85,12 @@ void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg) {
   udp.beginPacket(udpAddress, port);
   udp.println(buf);
   udp.endPacket();
+}
+
+void SendNMEA0183Message(SerialToNMEA0183* serialToNMEA0183) {
+  while (serialToNMEA0183->parseMessage()) {
+    udp.beginPacket(udpAddress, port);
+    udp.println(serialToNMEA0183->getMessage());
+    udp.endPacket();
+  }
 }
