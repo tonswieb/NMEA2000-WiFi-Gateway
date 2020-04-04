@@ -26,6 +26,7 @@ tN2kDataToNMEA0183 tN2kDataToNMEA0183(&NMEA2000, 0);
 
 // Forward declarations
 void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg);
+void SendNMEA0183Message(SerialToNMEA0183* serialToNMEA0183);
 void InitNMEA2000();
 
 #include <nvs.h>
