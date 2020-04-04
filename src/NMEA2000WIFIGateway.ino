@@ -4,20 +4,14 @@
 
 #define ESP32_NMEA38400_RX 5
 #define ESP32_NMEA38400_TX 13 //Free pin. We don't need to use, but need to map something.
-#define ESP32_CAN_TX_PIN GPIO_NUM_12
-#define ESP32_CAN_RX_PIN GPIO_NUM_13
+#define ESP32_CAN_TX_PIN GPIO_NUM_2
+#define ESP32_CAN_RX_PIN GPIO_NUM_15
 #include <NMEA2000_CAN.h>
-#include <WiFi.h>
 #include "N2kDataToNMEA0183.h"
-#include <WiFiUdp.h>
 #include "SerialToNMEA0183.h"
-#include "ResetWifi.cpp"
+#include "WifiConnection.h"
 
-// Define your default settings here
-const char *ssid = "ARISTO"; //Replace with WIFI name.
-const char *udpAddress = "192.168.4.255";
-const int port = 9876;
-WiFiUDP udp;
+WifiConnection* connection;
 SerialToNMEA0183* aisReceiver;
 tN2kDataToNMEA0183 tN2kDataToNMEA0183(&NMEA2000, 0);
 
@@ -32,26 +26,17 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
 
-  InitWIFI();
   InitNMEA2000();
-
+  connection = new WifiConnection();
   aisReceiver = new SerialToNMEA0183(&Serial1);
 }
 
 //*****************************************************************************
 void loop() {
+  ArduinoOTA.handle();
   NMEA2000.ParseMessages();
   tN2kDataToNMEA0183.Update();
   SendNMEA0183Message(aisReceiver);
-}
-
-void InitWIFI() {
-
-  // Set WiFi to station mode and disconnect from an AP if it was previously connected
-  ResetWiFiSettingsOnNvs();
-  delay(1000);
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid);
 }
 
 //*****************************************************************************
@@ -76,15 +61,11 @@ void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg) {
   
   char buf[MAX_NMEA0183_MESSAGE_SIZE];
   if ( !NMEA0183Msg.GetMessage(buf,MAX_NMEA0183_MESSAGE_SIZE) ) return;
-  udp.beginPacket(udpAddress, port);
-  udp.println(buf);
-  udp.endPacket();
+  connection->sendUdpPackage(buf);
 }
 
 void SendNMEA0183Message(SerialToNMEA0183* serialToNMEA0183) {
   while (serialToNMEA0183->parseMessage()) {
-    udp.beginPacket(udpAddress, port);
-    udp.println(serialToNMEA0183->getMessage());
-    udp.endPacket();
+    connection->sendUdpPackage(serialToNMEA0183->getMessage());
   }
 }
