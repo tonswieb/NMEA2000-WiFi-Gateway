@@ -1,9 +1,3 @@
-#include <NMEA2000_CAN.h>
-#include "N2kDataToNMEA0183.h"
-#include "SerialToNMEA0183.h"
-#include "WifiConnection.h"
-#include <FastLED.h>
-#include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 
 // Demo: NMEA2000 library. Sends NMEA2000 to WiFi in NMEA0183 and SeaSmart format.
 //
@@ -20,6 +14,13 @@
 #define ESP32_NMEA4800_TX 12 //Free pin. We don't need to use, but need to map something.
 #define ESP32_CAN_TX_PIN GPIO_NUM_2
 #define ESP32_CAN_RX_PIN GPIO_NUM_15
+
+#include <NMEA2000_CAN.h>
+#include "N2kDataToNMEA0183.h"
+#include "SerialToNMEA0183.h"
+#include "WifiConnection.h"
+#include <FastLED.h>
+#include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 
 WifiConnection *connection;
 SerialToNMEA0183 *aisReceiver;
@@ -73,10 +74,10 @@ void InitNMEA2000()
 //*****************************************************************************
 void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg)
 {
-
   char buf[MAX_NMEA0183_MESSAGE_SIZE];
   if (!NMEA0183Msg.GetMessage(buf, MAX_NMEA0183_MESSAGE_SIZE))
     return;
+
   connection->sendUdpPackage(buf);
 }
 

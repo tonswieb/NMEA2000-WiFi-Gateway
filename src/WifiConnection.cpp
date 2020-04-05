@@ -41,13 +41,14 @@ void WifiConnection::setupWIFI()
         Serial.println("\r\n[SETUP] Network found and logged in");
         ipLok = WiFi.localIP();
     }
+
     else
     {
         Serial.println("\r\n[SETUP] Setup AP");
         WiFi.mode(WIFI_AP);
         WiFi.softAP(ssid, password); // if not logged in to known network set up AccesPoint with the same credentials
     }
-
+    ipLok[3] = 255;
     Serial.print("[SETUP] IP address: ");
     Serial.println(ipLok);
     Serial.println("[SETUP] Ready");
@@ -86,7 +87,7 @@ void WifiConnection::setup_OTA()
 void WifiConnection::sendUdpPackage(char *buf)
 {
 
-    udp.beginPacket(udpAddress, port);
+    udp.beginPacket(ipLok, port);
     udp.println(buf);
     udp.endPacket();
 }
