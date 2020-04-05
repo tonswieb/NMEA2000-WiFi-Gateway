@@ -1,6 +1,7 @@
 #include "WifiConnection.h"
 
-WifiConnection::WifiConnection() {
+WifiConnection::WifiConnection()
+{
 
     ResetWiFiSettingsOnNvs();
     delay(1000);
@@ -8,12 +9,13 @@ WifiConnection::WifiConnection() {
     setup_OTA();
 }
 
-void WifiConnection::ResetWiFiSettingsOnNvs() {
-  int err;
-  err=nvs_flash_init();
-  Serial.println("nvs_flash_init: " + err);
-  err=nvs_flash_erase();
-  Serial.println("nvs_flash_erase: " + err); 
+void WifiConnection::ResetWiFiSettingsOnNvs()
+{
+    int err;
+    err = nvs_flash_init();
+    Serial.println("nvs_flash_init: " + err);
+    err = nvs_flash_erase();
+    Serial.println("nvs_flash_erase: " + err);
 }
 
 void WifiConnection::setupWIFI()
@@ -43,14 +45,12 @@ void WifiConnection::setupWIFI()
     {
         Serial.println("\r\n[SETUP] Setup AP");
         WiFi.mode(WIFI_AP);
-        WiFi.softAP(ssid, password); // if nog logged in to known network set up AccesPoint with the same credentials
+        WiFi.softAP(ssid, password); // if not logged in to known network set up AccesPoint with the same credentials
     }
 
     Serial.print("[SETUP] IP address: ");
-    Serial.print(ipLok);
-    setup_OTA();
+    Serial.println(ipLok);
     Serial.println("[SETUP] Ready");
-    TimeStamp = millis();
 }
 
 void WifiConnection::setup_OTA()
@@ -83,7 +83,8 @@ void WifiConnection::setup_OTA()
     Serial.println("...done!");
 }
 
-void WifiConnection::sendUdpPackage(char* buf) {
+void WifiConnection::sendUdpPackage(char *buf)
+{
 
     udp.beginPacket(udpAddress, port);
     udp.println(buf);
