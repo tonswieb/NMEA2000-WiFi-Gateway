@@ -39,16 +39,16 @@ void setup()
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
   connection = new WifiConnection();
   InitNMEA2000();
-  //aisReceiver = new SerialToNMEA0183(&Serial1);
+  aisReceiver = new SerialToNMEA0183(&Serial1);
 }
 
 //*****************************************************************************
 void loop()
 {
   ArduinoOTA.handle();
-  //NMEA2000.ParseMessages();
-  //tN2kDataToNMEA0183.Update();
-  //SendNMEA0183Message(aisReceiver);
+  NMEA2000.ParseMessages();
+  tN2kDataToNMEA0183.Update();
+  SendNMEA0183Message(aisReceiver);
 }
 
 //*****************************************************************************
@@ -66,6 +66,7 @@ void InitNMEA2000()
 
   NMEA2000.Open();
   Serial.println("NMEA200 initialized.");
+  delay(100);
 }
 
 #define MAX_NMEA0183_MESSAGE_SIZE 100
