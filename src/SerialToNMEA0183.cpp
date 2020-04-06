@@ -1,14 +1,16 @@
 #include "SerialToNMEA0183.h"
 #include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 
-SerialToNMEA0183::SerialToNMEA0183(Stream *serialIn)
+SerialToNMEA0183::SerialToNMEA0183(Stream *serialIn, std::function<void (char*)> handler_func)
 {
   this->serialIn = serialIn;
+  _handler_func = handler_func;
 }
 
-char *SerialToNMEA0183::getMessage()
-{
-  return MsgInBuf;
+void SerialToNMEA0183::loop() {
+   while (parseMessage()) {
+    _handler_func (MsgInBuf);
+  } 
 }
 
 bool SerialToNMEA0183::parseMessage()
