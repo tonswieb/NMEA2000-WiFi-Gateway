@@ -20,14 +20,16 @@
 #include "SerialToNMEA0183.h"
 #include "WifiConnection.h"
 #include <FastLED.h>
+#include <BluetoothSerial.h>
 #include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 
 WifiConnection *connection;
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183; 
+BluetoothSerial SerialBT;
 
-std::function<void (char*)> sendViaUdp = [] (char* message) {connection->sendUdpPackage(message);};
+std::function<void (char*)> sendViaUdp = [] (char* message) { connection->sendUdpPackage(message); SerialBT.println(message);};
 
 //*****************************************************************************
 void InitNMEA2000() {
@@ -48,6 +50,7 @@ void setup()
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
+  SerialBT.begin("N2K-bridge");
  
   connection = new WifiConnection(); 
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, sendViaUdp);
