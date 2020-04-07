@@ -49,9 +49,11 @@ void WifiConnection::setupWIFI()
         WiFi.softAP(ssid, password); // if not logged in to known network set up AccesPoint with the same credentials
         ipLok = WiFi.softAPIP();
     }
-    ipLok[3] = 255;
     Serial.print("[SETUP] IP address: ");
-    Serial.println(ipLok);
+    Serial.print(ipLok);
+    ipLok[3] = 255;
+    Serial.print(" UDPport: ");
+    Serial.println(port);
     Serial.println("[SETUP] Ready");
 }
 
