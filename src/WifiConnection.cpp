@@ -3,7 +3,7 @@
 WifiConnection::WifiConnection()
 {
 
-    ResetWiFiSettingsOnNvs();
+    // ResetWiFiSettingsOnNvs();
     delay(1000);
     setupWIFI();
     setup_OTA();

@@ -20,12 +20,14 @@
 #include "N2kDataToNMEA0183.h"
 #include "SerialToNMEA0183.h"
 #include "WifiConnection.h"
+#include "HtmlServer.h"
 #include <FastLED.h>
 #include <BluetoothSerial.h>
 #include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 #include <Wire.h>
 
 WifiConnection *connection;
+HtmlServer *htmlServer;
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
@@ -68,8 +70,9 @@ void setup()
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
   SerialBT.begin("N2K-bridge");
   Wire.begin(26, 25);
-
-  connection = new WifiConnection();
+ 
+  connection = new WifiConnection(); 
+  htmlServer = new HtmlServer();
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, messageCallback);
   aisReceiver = new SerialToNMEA0183(&Serial1, messageCallback);
   nmea0183Receiver = new SerialToNMEA0183(&Serial2, messageCallback);
@@ -77,8 +80,8 @@ void setup()
 }
 
 //*****************************************************************************
-void loop()
-{
+void loop() {
+  htmlServer->loop();
   ArduinoOTA.handle();
   SendN2KMessages();
 
@@ -88,7 +91,7 @@ void loop()
   nmea0183Receiver->loop();
 }
 
-#define UpdatePeriod 500
+#define UpdatePeriod 5000
 
 void SendN2KMessages()
 {
