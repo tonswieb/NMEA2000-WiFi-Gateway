@@ -23,21 +23,23 @@
 #include <FastLED.h>
 #include <BluetoothSerial.h>
 #include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
+#include <Wire.h>
 
 WifiConnection *connection;
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
-tN2kDataToNMEA0183 *nk2To0183; 
+tN2kDataToNMEA0183 *nk2To0183;
 BluetoothSerial SerialBT;
 
-std::function<void (char*)> messageCallback = [] (char* message) { 
-    connection->sendUdpPackage(message); 
-    SerialBT.println(message);
-    Serial.println(message);
-    };
+std::function<void(char *)> messageCallback = [](char *message) {
+  connection->sendUdpPackage(message);
+  SerialBT.println(message);
+  Serial.println(message);
+};
 
 //*****************************************************************************
-void InitNMEA2000() {
+void InitNMEA2000()
+{
 
   NMEA2000.SetN2kCANMsgBufSize(8);
   NMEA2000.SetN2kCANReceiveFrameBufSize(100);
@@ -50,14 +52,24 @@ void InitNMEA2000() {
 }
 
 //*****************************************************************************
+void InitHardware()
+{
+  pinMode(Relais, OUTPUT);
+  digitalWrite(Relais, LOW);
+  pinMode(MOB, INPUT);
+}
+
+//*****************************************************************************
 void setup()
 {
+  InitHardware();
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
   SerialBT.begin("N2K-bridge");
- 
-  connection = new WifiConnection(); 
+  Wire.begin(26, 25);
+
+  connection = new WifiConnection();
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, messageCallback);
   aisReceiver = new SerialToNMEA0183(&Serial1, messageCallback);
   nmea0183Receiver = new SerialToNMEA0183(&Serial2, messageCallback);
@@ -65,7 +77,8 @@ void setup()
 }
 
 //*****************************************************************************
-void loop() {
+void loop()
+{
   ArduinoOTA.handle();
   SendN2KMessages();
 
@@ -77,7 +90,8 @@ void loop() {
 
 #define UpdatePeriod 500
 
-void SendN2KMessages() {
+void SendN2KMessages()
+{
   unsigned char seq = 1;
   uint16_t DaysSince1970 = 18090;
   double magHeading = 290.0;
@@ -94,15 +108,16 @@ void SendN2KMessages() {
   double lat = 30.0;
   double lon = 20.0;
   double altitude = 1.0;
-  double SecondsSinceMidnight = 7*3600;
+  double SecondsSinceMidnight = 7 * 3600;
   unsigned char nSatellites = 5;
-  double HDOP=0.0;
-  
-  static unsigned long Updated=millis();
+  double HDOP = 0.0;
+
+  static unsigned long Updated = millis();
   tN2kMsg N2kMsg;
 
-  if ( Updated+UpdatePeriod<millis() ) {
-    Updated=millis();
+  if (Updated + UpdatePeriod < millis())
+  {
+    Updated = millis();
 
     SetN2kTrueHeading(N2kMsg, seq, magHeading + variation);
     nk2To0183->HandleMsg(N2kMsg);
@@ -110,13 +125,13 @@ void SendN2KMessages() {
     nk2To0183->HandleMsg(N2kMsg);
     SetN2kMagneticVariation(N2kMsg, seq, N2kmagvar_Manual, DaysSince1970, variation);
     nk2To0183->HandleMsg(N2kMsg);
-    SetN2kBoatSpeed(N2kMsg, seq, waterSpeed, groundSpeed, N2kSWRT_Paddle_wheel); 
+    SetN2kBoatSpeed(N2kMsg, seq, waterSpeed, groundSpeed, N2kSWRT_Paddle_wheel);
     nk2To0183->HandleMsg(N2kMsg);
     SetN2kWaterDepth(N2kMsg, seq, depthBelowTransducer, depthTransducerOffset);
     nk2To0183->HandleMsg(N2kMsg);
     SetN2kLatLonRapid(N2kMsg, lat, lon);
     nk2To0183->HandleMsg(N2kMsg);
-    SetN2kCOGSOGRapid(N2kMsg, seq, N2khr_magnetic, cog, sog); 
+    SetN2kCOGSOGRapid(N2kMsg, seq, N2khr_magnetic, cog, sog);
     nk2To0183->HandleMsg(N2kMsg);
     SetN2kWindSpeed(N2kMsg, seq, windSpeed, windAngle, N2kWind_Apparent);
     nk2To0183->HandleMsg(N2kMsg);
@@ -124,4 +139,3 @@ void SendN2KMessages() {
     nk2To0183->HandleMsg(N2kMsg);
   }
 }
-
