@@ -23,6 +23,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <NMEA0183.h>
 #include <NMEA2000.h>
+#include <functional>
+#define MAX_NMEA0183_MESSAGE_SIZE 100
 
 //------------------------------------------------------------------------------
 class tN2kDataToNMEA0183 : public tNMEA2000::tMsgHandler {
@@ -50,8 +52,7 @@ protected:
   double SecondsSinceMidnight;
   unsigned long NextRMCSend;
 
-  tNMEA0183 *pNMEA0183;
-  tSendNMEA0183MessageCallback SendNMEA0183MessageCallback;
+  std::function<void (char*)> _handler_func;
 
 protected:
   void HandleSystemTime(const tN2kMsg &N2kMsg); // 126992
@@ -69,9 +70,8 @@ protected:
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
 
 public:
-  tN2kDataToNMEA0183(tNMEA2000 *_pNMEA2000, tNMEA0183 *_pNMEA0183) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
-    SendNMEA0183MessageCallback=0;
-    pNMEA0183=_pNMEA0183;
+  tN2kDataToNMEA0183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
+    _handler_func = handler_func;
     Latitude=N2kDoubleNA; Longitude=N2kDoubleNA; Altitude=N2kDoubleNA;
     Variation=N2kDoubleNA; Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
     SecondsSinceMidnight=N2kDoubleNA; DaysSince1970=N2kUInt16NA;
@@ -84,8 +84,5 @@ public:
     LastSystemTime=0;
   }
   void HandleMsg(const tN2kMsg &N2kMsg);
-  void SetSendNMEA0183MessageCallback(tSendNMEA0183MessageCallback _SendNMEA0183MessageCallback) {
-    SendNMEA0183MessageCallback=_SendNMEA0183MessageCallback;
-  }
   void Update();
 };

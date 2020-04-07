@@ -83,10 +83,12 @@ void tN2kDataToNMEA0183::Update()
 //*****************************************************************************
 void tN2kDataToNMEA0183::SendMessage(const tNMEA0183Msg &NMEA0183Msg)
 {
-  if (pNMEA0183 != 0)
-    pNMEA0183->SendMessage(NMEA0183Msg);
-  if (SendNMEA0183MessageCallback != 0)
-    SendNMEA0183MessageCallback(NMEA0183Msg);
+  if (_handler_func) {
+    char buf[MAX_NMEA0183_MESSAGE_SIZE];
+    if (NMEA0183Msg.GetMessage(buf, MAX_NMEA0183_MESSAGE_SIZE)) {
+      _handler_func (buf);
+    }
+  }
 }
 
 //*****************************************************************************

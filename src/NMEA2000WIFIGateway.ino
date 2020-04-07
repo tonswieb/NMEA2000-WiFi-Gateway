@@ -20,17 +20,29 @@
 #include "SerialToNMEA0183.h"
 #include "WifiConnection.h"
 #include <FastLED.h>
+#include <BluetoothSerial.h>
 #include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 
 WifiConnection *connection;
 SerialToNMEA0183 *aisReceiver;
-tN2kDataToNMEA0183 tN2kDataToNMEA0183(&NMEA2000, 0);
+SerialToNMEA0183 *nmea0183Receiver;
+tN2kDataToNMEA0183 *nk2To0183; 
+BluetoothSerial SerialBT;
 
-// Forward declarations
-void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg);
-void SendNMEA0183Message(SerialToNMEA0183 *serialToNMEA0183);
-void InitWIFI();
-void InitNMEA2000();
+std::function<void (char*)> sendViaUdp = [] (char* message) { connection->sendUdpPackage(message); SerialBT.println(message);};
+
+//*****************************************************************************
+void InitNMEA2000() {
+
+  NMEA2000.SetN2kCANMsgBufSize(8);
+  NMEA2000.SetN2kCANReceiveFrameBufSize(100);
+  NMEA2000.SetForwardStream(&Serial);            // PC output on due native port
+  NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenOnly);
+  NMEA2000.AttachMsgHandler(nk2To0183); // NMEA 2000 -> NMEA 0183 conversion
+  NMEA2000.Open();
+  Serial.println("NMEA200 initialized.");
+}
 
 //*****************************************************************************
 void setup()
@@ -38,53 +50,21 @@ void setup()
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
-  connection = new WifiConnection();
+  SerialBT.begin("N2K-bridge");
+ 
+  connection = new WifiConnection(); 
+  nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, sendViaUdp);
+  aisReceiver = new SerialToNMEA0183(&Serial1, sendViaUdp);
+  nmea0183Receiver = new SerialToNMEA0183(&Serial2, sendViaUdp);
   InitNMEA2000();
-  aisReceiver = new SerialToNMEA0183(&Serial1);
 }
 
 //*****************************************************************************
-void loop()
-{
+void loop() {
+
   ArduinoOTA.handle();
   NMEA2000.ParseMessages();
-  tN2kDataToNMEA0183.Update();
-  SendNMEA0183Message(aisReceiver);
-}
-
-//*****************************************************************************
-void InitNMEA2000()
-{
-
-  NMEA2000.SetN2kCANMsgBufSize(8);
-  NMEA2000.SetN2kCANReceiveFrameBufSize(100);
-  NMEA2000.SetForwardStream(&Serial);            // PC output on due native port
-  NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenOnly);
-  NMEA2000.AttachMsgHandler(&tN2kDataToNMEA0183); // NMEA 2000 -> NMEA 0183 conversion
-
-  tN2kDataToNMEA0183.SetSendNMEA0183MessageCallback(SendNMEA0183Message);
-
-  NMEA2000.Open();
-  Serial.println("NMEA200 initialized.");
-  delay(100);
-}
-
-#define MAX_NMEA0183_MESSAGE_SIZE 100
-//*****************************************************************************
-void SendNMEA0183Message(const tNMEA0183Msg &NMEA0183Msg)
-{
-  char buf[MAX_NMEA0183_MESSAGE_SIZE];
-  if (!NMEA0183Msg.GetMessage(buf, MAX_NMEA0183_MESSAGE_SIZE))
-    return;
-
-  connection->sendUdpPackage(buf);
-}
-
-void SendNMEA0183Message(SerialToNMEA0183 *serialToNMEA0183)
-{
-  while (serialToNMEA0183->parseMessage())
-  {
-    connection->sendUdpPackage(serialToNMEA0183->getMessage());
-  }
+  nk2To0183->Update();
+  aisReceiver->loop();
+  nmea0183Receiver->loop();
 }
