@@ -33,6 +33,8 @@ SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
 BluetoothSerial SerialBT;
 
+long Blink;
+
 std::function<void(char *)> messageCallback = [](char *message) {
   connection->sendUdpPackage(message);
   SerialBT.println(message);
@@ -70,8 +72,8 @@ void setup()
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
   SerialBT.begin("N2K-bridge");
   Wire.begin(26, 25);
- 
-  connection = new WifiConnection(); 
+
+  connection = new WifiConnection();
   htmlServer = new HtmlServer();
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, messageCallback);
   aisReceiver = new SerialToNMEA0183(&Serial1, messageCallback);
@@ -80,8 +82,9 @@ void setup()
 }
 
 //*****************************************************************************
-void loop() {
-  htmlServer->loop();
+void loop()
+{
+  //htmlServer->loop();
   ArduinoOTA.handle();
   SendN2KMessages();
 
@@ -89,6 +92,11 @@ void loop() {
   nk2To0183->Update();
   aisReceiver->loop();
   nmea0183Receiver->loop();
+  if (Blink + 1000 < millis())
+  {
+    Blink = millis();
+    digitalWrite(Relais, !digitalRead(Relais));
+  }
 }
 
 #define UpdatePeriod 5000
