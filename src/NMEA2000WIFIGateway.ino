@@ -84,7 +84,7 @@ void setup()
 //*****************************************************************************
 void loop()
 {
-  //htmlServer->loop();
+  htmlServer->loop();
   ArduinoOTA.handle();
   SendN2KMessages();
 
@@ -95,8 +95,9 @@ void loop()
   if (Blink + 1000 < millis())
   {
     Blink = millis();
-    digitalWrite(Relais, !digitalRead(Relais));
+    digitalWrite(Relais, !digitalRead(Relais)); //relais test. should be toggeling with 1 Hz
   }
+  
 }
 
 #define UpdatePeriod 5000
