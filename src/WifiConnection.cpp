@@ -2,20 +2,9 @@
 
 WifiConnection::WifiConnection()
 {
-
-    // ResetWiFiSettingsOnNvs();
     delay(1000);
     setupWIFI();
     setup_OTA();
-}
-
-void WifiConnection::ResetWiFiSettingsOnNvs()
-{
-    int err;
-    err = nvs_flash_init();
-    Serial.println("nvs_flash_init: " + err);
-    err = nvs_flash_erase();
-    Serial.println("nvs_flash_erase: " + err);
 }
 
 void WifiConnection::setupWIFI()

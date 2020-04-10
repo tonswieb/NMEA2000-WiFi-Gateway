@@ -1,9 +1,10 @@
+#ifndef _WIFICONNECTION_H_
+#define _WIFICONNECTION_H_
+
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
-#include <nvs.h>
-#include <nvs_flash.h>
 
 class WifiConnection
 {
@@ -26,3 +27,5 @@ public:
   WifiConnection();
   void sendUdpPackage(char *message);
 };
+
+#endif
