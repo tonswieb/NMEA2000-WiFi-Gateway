@@ -8,10 +8,34 @@
 <body>
     <form>
         <input type="hidden" id="handleForm" name="handleForm" value="1">
-        <input type="checkbox" id="blEnabled" name="blEnabled" value="Bleutooth" $blEnabled />
-        <label for="blEnabled">Bluetooth Enabled</label><br>
-        <input type="checkbox" id="demoEnabled" name="demoEnabled" value="Demo" $demoEnabled />
-        <label for="demoEnabled">Demo data Enabled</label><br>
+
+        <label for="blEnabled">Bluetooth Enabled</label>
+        <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
+
+        <label for="demoEnabled">Demo data Enabled</label>
+        <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
+
+        <label for="wifiStaEnabled">Use WIFI Station</label>
+        <input type="checkbox" id="wifiStaEnabled" name="wifiStaEnabled" $wifiStaEnabled /><br>
+
+        <label for="wifiStaHostname">WIFI Station - Hostname</label>
+        <input type="text" id="wifiStaHostname" name="wifiStaHostname" value="$wifiStaHostname" /><br>
+
+        <label for="wifiStaSsid">WIFI Station - SSID</label>
+        <input type="text" id="wifiStaSsid" name="wifiStaSsid" value="$wifiStaSsid" /><br>
+
+        <label for="wifiStaPassw">WIFI Station - Password</label>
+        <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>
+
+        <label for="wifiApSsid">WIFI Access Point - SSID</label>
+        <input type="text" id="wifiApSsid" name="wifiApSsid" value="$wifiApSsid" /><br>
+
+        <label for="wifiApPassword">WIFI Access Point - Password</label>
+        <input type="password" id="wifiApPassword" name="wifiApPassword" value="$wifiApPassword" /><br>
+
+        <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
+        <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
+
         <input type="submit" value="Submit" />
     </form>
 </body>

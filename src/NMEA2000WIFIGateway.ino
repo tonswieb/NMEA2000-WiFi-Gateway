@@ -28,18 +28,18 @@
 #include <WebServer.h>
 #include "PreferenceRequestHandler.h"
 
-WifiConnection *connection;
+N2KPreferences prefs;
+WifiConnection connection (&prefs);
 WebServer webserver (80);
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
 BluetoothSerial SerialBT;
-N2KPreferences prefs;
 
 long Blink;
 
 std::function<void(char *)> messageCallback = [](char *message) {
-  connection->sendUdpPackage(message);
+  connection.sendUdpPackage(message);
   if (prefs.isBlEnabled()) {
     SerialBT.println(message);
   }
@@ -71,19 +71,20 @@ void InitHardware()
 //*****************************************************************************
 void setup()
 {
+  prefs.begin();
   InitHardware();
-  SPIFFS.begin();
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
 
-  // if (prefs.isBlEnabled()) {
-  //   Serial.println("Initializing bluetooth.");
-  //   SerialBT.begin("N2K-bridge");
-  // }  
+  if (prefs.isBlEnabled()) {
+    Serial.println("Initializing bluetooth.");
+    SerialBT.begin("N2K-bridge");
+  }  
   Wire.begin(26, 25);
 
-  connection = new WifiConnection();
+  connection.begin();
+  SPIFFS.begin();
   webserver.addHandler(new PreferenceRequestHandler(&prefs));
   webserver.begin();
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, messageCallback);
@@ -118,7 +119,6 @@ void SendN2KMessages()
   if (!prefs.isDemoEnabled()) {
     return;
   }
-
   unsigned char seq = 1;
   uint16_t DaysSince1970 = 18090;
   double magHeading = 290.0;
