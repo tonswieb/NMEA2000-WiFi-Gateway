@@ -122,16 +122,17 @@ protected:
     {
         String path = server.uri();
         Serial.println("handleFileRead: " + path);
-        if (path.endsWith("/"))
-        {
-            path += "index.html";
-        }
         if (path.endsWith("/readADC"))
         {
             server.send(200, "text/plane", String(VCC));
+        } else if (path.endsWith("/favicon.ico"))
+        {
+            server.send(404, "text/plain", "FileNotFound");
+        } else if (path.endsWith("/"))
+        {
+            path += "index.html";
         }
 
-        String contentType = getContentType(server, path);
         String pathWithGz = path + ".gz";
         if (exists(pathWithGz) || exists(path))
         {
@@ -147,19 +148,23 @@ protected:
 
     void sendFileContent(WebServer &server, String path)
     {
-
         File file = FILESYSTEM.open(path, "r");
-        String content = file.readString();
-        content.replace(getVar(_prefs->PREF_BLUETOOTH_ENABLED), _prefs->isBlEnabled() ? "checked" : "");
-        content.replace(getVar(_prefs->PREF_DEMO_ENABLED), _prefs->isDemoEnabled() ? "checked" : "");
-        content.replace(getVar(_prefs->PREF_WIFI_STA_ENABLED), _prefs->getStationEnabled() ? "checked" : "");
-        content.replace(getVar(_prefs->PREF_WIFI_UDP_PORT), String(_prefs->getUdpBroadcastPort()));
-        content.replace(getVar(_prefs->PREF_WIFI_STA_HOSTNAME), _prefs->getStationHostname());
-        content.replace(getVar(_prefs->PREF_WIFI_STA_SSID), _prefs->getStationSSID());
-        content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
-        content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
-        content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
-        server.sendContent(content);
+        if (path.endsWith("html")) {
+            String content = file.readString();
+            content.replace(getVar(_prefs->PREF_BLUETOOTH_ENABLED), _prefs->isBlEnabled() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_DEMO_ENABLED), _prefs->isDemoEnabled() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_WIFI_STA_ENABLED), _prefs->getStationEnabled() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_WIFI_UDP_PORT), String(_prefs->getUdpBroadcastPort()));
+            content.replace(getVar(_prefs->PREF_WIFI_STA_HOSTNAME), _prefs->getStationHostname());
+            content.replace(getVar(_prefs->PREF_WIFI_STA_SSID), _prefs->getStationSSID());
+            content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
+            content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
+            content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
+            server.sendContent(content);
+        } else {
+            String contentType = getContentType(server, path);
+            server.streamFile(file, contentType);
+        }
         file.close();
     }
 

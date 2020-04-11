@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html>
+    <link rel="stylesheet" href="bootstrap-reboot.min.css">
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+        .container {
+            padding: 1em;
+        }
 
+        form {
+           display: grid;
+           grid-template-columns: 1fr 1fr;
+           grid-gap: 4px;
+        }
+        label {
+            grid-column: 1 / 2;
+        }
+ 
+        input,
+        button {
+            grid-column: 2 / 3;
+        }        
+        </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -8,6 +30,11 @@
 </head>
 
 <body>
+    <div class="container">
+    <div class="header">
+        <h1>N2K - Bridge</h1>
+    </div>
+    <div class="body">
     <form>
         <div class="card">
             <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
@@ -45,6 +72,8 @@
         <input type="submit" value="Submit" />
         <br /><br /><br />
     </form>
+    </div>
+    </div>
     <script>
         setInterval(function () {
             // Call a function repetatively with 2 Second interval
