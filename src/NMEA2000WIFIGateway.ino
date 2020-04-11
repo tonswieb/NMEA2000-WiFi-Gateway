@@ -29,7 +29,7 @@
 #include "PreferenceRequestHandler.h"
 
 WifiConnection *connection;
-WebServer webserver (80);
+WebServer webserver(80);
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
@@ -37,10 +37,12 @@ BluetoothSerial SerialBT;
 N2KPreferences prefs;
 
 long Blink;
+double VCC = 0.0;
 
 std::function<void(char *)> messageCallback = [](char *message) {
   connection->sendUdpPackage(message);
-  if (prefs.isBlEnabled()) {
+  if (prefs.isBlEnabled())
+  {
     SerialBT.println(message);
   }
   Serial.println(message);
@@ -80,7 +82,7 @@ void setup()
   // if (prefs.isBlEnabled()) {
   //   Serial.println("Initializing bluetooth.");
   //   SerialBT.begin("N2K-bridge");
-  // }  
+  // }
   Wire.begin(26, 25);
 
   connection = new WifiConnection();
@@ -107,15 +109,16 @@ void loop()
   {
     Blink = millis();
     digitalWrite(Relais, !digitalRead(Relais)); //relais test. should be toggeling with 1 Hz
+    VCC = analogRead(Vin) * 3.6 * 5.7 / 4095;
   }
-  
 }
 
 #define UpdatePeriod 5000
 
 void SendN2KMessages()
-{ 
-  if (!prefs.isDemoEnabled()) {
+{
+  if (!prefs.isDemoEnabled())
+  {
     return;
   }
 
