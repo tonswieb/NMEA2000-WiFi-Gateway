@@ -5,24 +5,24 @@
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <N2KPreferences.h>
 
 class WifiConnection
 {
 
 private:
-  // Define your default settings here
-  const char *udpAddress = "192.168.4.255";
-  const int port = 9876;
-  const char *host = "N2K-bridge";
+  N2KPreferences *prefs;
   IPAddress ipLok;
   WiFiUDP udp;
 
-  void ResetWiFiSettingsOnNvs();
   void setupWIFI();
   void setup_OTA();
 
 public:
-  WifiConnection();
+  WifiConnection(N2KPreferences *prefs);
+  ~WifiConnection();
+  void begin();
+  void end();
   void sendUdpPackage(char *message);
 };
 

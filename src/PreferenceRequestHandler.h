@@ -27,8 +27,17 @@ public:
         if (server.hasArg("handleForm"))
         {
             Serial.println("Handle Form");
-            _prefs->setBlEnabled(server.hasArg("blEnabled"));
-            _prefs->setDemoEnabled(server.hasArg("demoEnabled"));
+            _prefs->setBlEnabled(server.hasArg(_prefs->PREF_BLUETOOTH_ENABLED));
+            _prefs->setDemoEnabled(server.hasArg(_prefs->PREF_DEMO_ENABLED));
+            _prefs->setStationEnabled(server.hasArg(_prefs->PREF_WIFI_STA_ENABLED));
+            _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
+            _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
+            _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
+            _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
+            _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
+            //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
+            _prefs->setUdpBroadcastPort(server.arg(_prefs->PREF_WIFI_UDP_PORT).toInt());
+            ESP.restart();
         }
         if (!handleFileRead(server))
         {
@@ -136,16 +145,25 @@ protected:
         return false;
     }
 
-    void sendFileContent(WebServer &server, String path)
-    {
-        char temp[10];
+    void sendFileContent(WebServer& server, String path) {
+
         File file = FILESYSTEM.open(path, "r");
         String content = file.readString();
-        content.replace("$blEnabled", _prefs->isBlEnabled() ? "checked" : "");
-        content.replace("$demoEnabled", _prefs->isDemoEnabled() ? "checked" : "");
+        content.replace(getVar(_prefs->PREF_BLUETOOTH_ENABLED), _prefs->isBlEnabled() ? "checked" : "");
+        content.replace(getVar(_prefs->PREF_DEMO_ENABLED), _prefs->isDemoEnabled() ? "checked" : "");
+        content.replace(getVar(_prefs->PREF_WIFI_STA_ENABLED), _prefs->getStationEnabled() ? "checked" : "");
+        content.replace(getVar(_prefs->PREF_WIFI_UDP_PORT), String(_prefs->getUdpBroadcastPort()));
+        content.replace(getVar(_prefs->PREF_WIFI_STA_HOSTNAME), _prefs->getStationHostname());
+        content.replace(getVar(_prefs->PREF_WIFI_STA_SSID), _prefs->getStationSSID());
+        content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
+        content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
+        content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
         server.sendContent(content);
         file.close();
     }
-};
 
+    String getVar(const char * pref) {
+        return "$" + String(pref);      
+    }
+};
 #endif //REQUESTHANDLERSIMPL_H
