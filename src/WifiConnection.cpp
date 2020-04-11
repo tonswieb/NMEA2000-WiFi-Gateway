@@ -1,4 +1,5 @@
 #include "WifiConnection.h"
+#include <credentials.h>
 
 WifiConnection::WifiConnection()
 {

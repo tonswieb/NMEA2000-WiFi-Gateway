@@ -11,10 +11,8 @@ class WifiConnection
 
 private:
   // Define your default settings here
-  const char *ssid = "airsupplies"; //Replace with WIFI name.
   const char *udpAddress = "192.168.4.255";
   const int port = 9876;
-  const char *password = "02351228133648477429";
   const char *host = "N2K-bridge";
   IPAddress ipLok;
   WiFiUDP udp;
