@@ -24,12 +24,11 @@ public:
 
     bool handle(WebServer &server, HTTPMethod requestMethod, String requestUri) override
     {
-        if (server.hasArg("handleForm"))
-        {
-            Serial.println("Handle Form");
-            _prefs->setBlEnabled(server.hasArg(_prefs->PREF_BLUETOOTH_ENABLED));
-            _prefs->setDemoEnabled(server.hasArg(_prefs->PREF_DEMO_ENABLED));
-            _prefs->setStationEnabled(server.hasArg(_prefs->PREF_WIFI_STA_ENABLED));
+        if (requestMethod == HTTP_POST) {
+            Serial.println("Handling upload: " + requestUri);
+            _prefs->setBlEnabled(server.arg(_prefs->PREF_BLUETOOTH_ENABLED).equals("on"));
+            _prefs->setDemoEnabled(server.arg(_prefs->PREF_DEMO_ENABLED).equals("on"));
+            _prefs->setStationEnabled(server.arg(_prefs->PREF_WIFI_STA_ENABLED).equals("on"));
             _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
             _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
             _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
@@ -37,10 +36,13 @@ public:
             _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
             //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
             _prefs->setUdpBroadcastPort(server.arg(_prefs->PREF_WIFI_UDP_PORT).toInt());
-            ESP.restart();
-        }
-        if (!handleFileRead(server))
-        {
+            server.send(204);
+            // ESP.restart();
+        } else if (requestUri.equals("/readADC")) {
+            server.send(200, "text/plane", String(VCC));
+        } else if (requestUri.equals("/favicon.ico")) {
+            server.send(404, "text/plain", "FileNotFound");
+        } else if (!handleFileRead(server)) {
             server.send(404, "text/plain", "FileNotFound");
         }
         return true;
@@ -122,14 +124,7 @@ protected:
     {
         String path = server.uri();
         Serial.println("handleFileRead: " + path);
-        if (path.endsWith("/readADC"))
-        {
-            server.send(200, "text/plane", String(VCC));
-        } else if (path.endsWith("/favicon.ico"))
-        {
-            server.send(404, "text/plain", "FileNotFound");
-        } else if (path.endsWith("/"))
-        {
+        if (path.endsWith("/")) {
             path += "index.html";
         }
 

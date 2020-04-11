@@ -35,7 +35,7 @@
         <h1>N2K - Bridge</h1>
     </div>
     <div class="body">
-    <form>
+    <form name="allData">
         <div class="card">
             <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
         </div>
@@ -69,12 +69,22 @@
         <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
         <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
 
-        <input type="submit" value="Submit" />
+        <button type="button" onclick="submitForm()">Submit</button> 
         <br /><br /><br />
     </form>
     </div>
     </div>
     <script>
+        function submitForm() {
+            // var formElement = document.querySelector("allData");
+            var formElement = document.forms.namedItem("allData");
+            var formData = new FormData(formElement);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "submitAll", true);
+            xhttp.send(formData);
+        }
+
+
         setInterval(function () {
             // Call a function repetatively with 2 Second interval
             getData();
