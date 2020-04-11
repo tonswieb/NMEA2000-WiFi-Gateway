@@ -29,8 +29,8 @@
 #include "PreferenceRequestHandler.h"
 
 N2KPreferences prefs;
-WifiConnection connection (&prefs);
-WebServer webserver (80);
+WifiConnection connection(&prefs);
+WebServer webserver(80);
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
@@ -79,10 +79,11 @@ void setup()
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
 
-  if (prefs.isBlEnabled()) {
+  if (prefs.isBlEnabled())
+  {
     Serial.println("Initializing bluetooth.");
     SerialBT.begin("N2K-bridge");
-  }  
+  }
   Wire.begin(26, 25);
 
   connection.begin();

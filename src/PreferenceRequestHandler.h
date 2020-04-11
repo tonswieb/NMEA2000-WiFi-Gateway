@@ -145,7 +145,8 @@ protected:
         return false;
     }
 
-    void sendFileContent(WebServer& server, String path) {
+    void sendFileContent(WebServer &server, String path)
+    {
 
         File file = FILESYSTEM.open(path, "r");
         String content = file.readString();
@@ -162,8 +163,9 @@ protected:
         file.close();
     }
 
-    String getVar(const char * pref) {
-        return "$" + String(pref);      
+    String getVar(const char *pref)
+    {
+        return "$" + String(pref);
     }
 };
 #endif //REQUESTHANDLERSIMPL_H

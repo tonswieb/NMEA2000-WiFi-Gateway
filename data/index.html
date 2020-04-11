@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>NMEA Bridge</title>
 </head>
+
 <body>
     <form>
+        <div class="card">
+            <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
+        </div>
+
         <input type="hidden" id="handleForm" name="handleForm" value="1">
 
         <label for="blEnabled">Bluetooth Enabled</label>
@@ -59,4 +65,5 @@
         }
     </script>
 </body>
+
 </html>
