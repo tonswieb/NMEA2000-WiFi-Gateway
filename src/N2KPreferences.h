@@ -22,7 +22,7 @@ private:
   String stationHostname;
   String staSSID;
   String staPassword;
-
+  
   //WIFI AP preferences
   String apSSID;
   String apPassword;

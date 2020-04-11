@@ -1,5 +1,4 @@
 #include "WifiConnection.h"
-#include <credentials.h>
 
 WifiConnection::WifiConnection(N2KPreferences *prefs)
 {
