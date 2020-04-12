@@ -5,9 +5,6 @@
         * {
           box-sizing: border-box;
         }
-        .container {
-            padding: 1em;
-        }
 
         form {
            display: grid;
@@ -20,13 +17,20 @@
             grid-template-columns: 1fr 1fr;
             grid-gap: 4px;
         }
-        h2,
+        h2 {
+            grid-column: 1 / 3;
+        }
+        button {
+            grid-column: 1 / 3;
+            max-width: 200px;
+        }
         label {
             grid-column: 1 / 2;
+            max-width: 200px;
         }
-        input,
-        button {
+        input {
             grid-column: 2 / 3;
+            max-width: 200px;
         }
         
         /* Style the tab */
@@ -93,6 +97,8 @@
             <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
         </div>
         <form name="demoSettings">
+            <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
+            <input type="hidden" id="demoSettingsForm" name="demoSettingsForm" value="dummy" />
             <label for="demoEnabled">Demo data Enabled</label>
             <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
             <button type="button" onclick="submitForm(this.form.name)">Save Demo Settings</button> 
@@ -102,6 +108,8 @@
         <h3>Bluetooth</h3>
         <p>Configure bluetooth. Requires a reset.</p>
         <form name="bluetoothSettings">
+            <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
+            <input type="hidden" id="bluetoothSettingsForm" name="bluetoothSettingsForm" value="dummy" />
             <label for="blEnabled">Bluetooth Enabled</label>
             <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
             <button type="button" onclick="submitForm(this.form.name)">Save Bluetooth Settings</button> 
@@ -147,9 +155,10 @@
     </div>
     <script>
         //Show General tab by default.
-        document.getElementById("tabGeneral").click();        
+        document.getElementById("tabGeneral").click();
+        toggleWifiStationOrAPVisibility(document.getElementById("wifiStaEnabled").checked);
 
-        function showTab(evt, cityName) {
+        function showTab(evt, tabName) {
             // Declare all variables
             var i, tabcontent, tablinks;
 
@@ -166,7 +175,7 @@
             }
 
             // Show the current tab, and add an "active" class to the button that opened the tab
-            document.getElementById(cityName).style.display = "block";
+            document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
         }
 

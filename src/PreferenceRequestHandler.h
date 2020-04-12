@@ -27,20 +27,23 @@ public:
         if (requestMethod == HTTP_POST) {
             Serial.println("Handling Form POST: " + requestUri);
             if (requestUri.equals("/demoSettings")) {
-                _prefs->setDemoEnabled(server.arg(_prefs->PREF_DEMO_ENABLED).equals("on"));
+                _prefs->setDemoEnabled(String("on").equals(server.arg(_prefs->PREF_DEMO_ENABLED)));
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
-                _prefs->setBlEnabled(server.arg(_prefs->PREF_BLUETOOTH_ENABLED).equals("on"));
+                _prefs->setBlEnabled(String("on").equals(server.arg(_prefs->PREF_BLUETOOTH_ENABLED)));
                 server.send(204);
             } else if (requestUri.equals("/wifiSettings")) {
-                _prefs->setStationEnabled(server.arg(_prefs->PREF_WIFI_STA_ENABLED).equals("on"));
-                _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
-                _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
-                _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
-                _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
-                _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
                 //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
                 _prefs->setUdpBroadcastPort(server.arg(_prefs->PREF_WIFI_UDP_PORT).toInt());
+                _prefs->setStationEnabled(String("on").equals(server.arg(_prefs->PREF_WIFI_STA_ENABLED)));
+                if (_prefs->getStationEnabled()) {
+                    _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
+                    _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
+                    _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
+                } else {
+                    _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
+                    _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
+                }
                 server.send(204);
             } else {
                 Serial.println("Received unknown form POST: " + requestUri);
@@ -174,7 +177,7 @@ protected:
             content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
             content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
             content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
-            server.sendContent(content);
+            server.send(200, "text/html", content);
         } else {
             String contentType = getContentType(server, path);
             server.streamFile(file, contentType);

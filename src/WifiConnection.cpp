@@ -27,7 +27,7 @@ void WifiConnection::setupWIFI()
         Serial.println("[WIFI] Try to connect to WIFI Station.");
         Serial.print("[WIFI] SSID: "); Serial.println(prefs->getStationSSID());
         Serial.print("[WIFI] Hostname: "); Serial.println(prefs->getStationHostname());
-        Serial.print("[WIFI] Password: "); Serial.println(sizeof(prefs->getStationPassword()) > 0 ? "*******" : "Password empty.");
+        Serial.print("[WIFI] Password: "); Serial.println(prefs->getStationPassword());
         //Try to connect to existing WIFI station (if enabled)
         WiFi.setHostname(prefs->getStationHostname());
         WiFi.mode(WIFI_STA);
@@ -53,7 +53,7 @@ void WifiConnection::setupWIFI()
         //if not logged in to known network set up AccesPoint with the same credentials
         Serial.println("[WIFI] SETUP WIFI AP.");
         Serial.print("[WIFI] SSID: "); Serial.println(prefs->getApSSID());
-        Serial.print("[WIFI] Password: "); Serial.println(sizeof(prefs->getApPassword()) < 1 ? "****" : "Password empty.");
+        Serial.print("[WIFI] Password: "); Serial.println(prefs->getApPassword());
 
         WiFi.mode(WIFI_AP);
         WiFi.softAP(prefs->getApSSID(), prefs->getApPassword());
