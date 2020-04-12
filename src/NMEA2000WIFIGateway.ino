@@ -28,6 +28,7 @@
 #include <WebServer.h>
 #include "PreferenceRequestHandler.h"
 
+
 N2KPreferences prefs;
 WifiConnection connection(&prefs);
 WebServer webserver(80);
@@ -38,6 +39,7 @@ BluetoothSerial SerialBT;
 
 long Blink;
 double VCC = 0.0;
+CRGB leds[NUM_LEDS];
 
 std::function<void(char *)> messageCallback = [](char *message) {
   connection.sendUdpPackage(message);
@@ -65,6 +67,10 @@ void InitNMEA2000()
 //*****************************************************************************
 void InitHardware()
 {
+  FastLED.addLeds<NEOPIXEL, WS2812_PIN>(leds, NUM_LEDS);
+  leds[0].blue = 5;
+  leds[1].green = 5;
+  FastLED.show();
   pinMode(Relais, OUTPUT);
   digitalWrite(Relais, LOW);
   pinMode(MOB, INPUT);
@@ -94,6 +100,10 @@ void setup()
   aisReceiver = new SerialToNMEA0183(&Serial1, messageCallback);
   nmea0183Receiver = new SerialToNMEA0183(&Serial2, messageCallback);
   InitNMEA2000();
+  leds[0].blue = 0;
+  leds[1].green = 0;
+  FastLED.show();
+
 }
 
 //*****************************************************************************
@@ -111,6 +121,13 @@ void loop()
   {
     Blink = millis();
     digitalWrite(Relais, !digitalRead(Relais)); //relais test. should be toggeling with 1 Hz
+    //make hardbeat
+    if(leds[0].green > 1){
+      leds[0].green =0;
+    }else{
+      leds[0].green =5;
+    }
+    FastLED.show();
     VCC = analogRead(Vin) * 3.6 * 5.7 / 4095;
   }
 }
