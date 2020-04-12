@@ -85,6 +85,7 @@
 <body>
     <div class="tab">
         <button id='tabGeneral' class="tablinks" onclick="showTab(event, 'General')">General</button>
+        <button class="tablinks" onclick="showTab(event, 'NMEAStream')">NMEA Stream</button>
         <button class="tablinks" onclick="showTab(event, 'Bluetooth')">Bluetooth</button>
         <button class="tablinks" onclick="showTab(event, 'WIFI')">WIFI</button>
         <button class="tablinks" onclick="showTab(event, 'Reset')">Reset</button>
@@ -104,6 +105,11 @@
             <button type="button" onclick="submitForm(this.form.name)">Save Demo Settings</button> 
         </form>
     </div>
+    <div id="NMEAStream" class="tabcontent"> 
+        <button id="nmeaStreamStart" type="button" onclick="wsStart()">Start</button> 
+        <button id="nmeaStreamStop" type="button" onclick="wsStop()" disable="disabled">Stop</button> <br>
+        <textarea id="nmeaStreamPrint" rows="10" cols="100" disabled="disabled"></textarea>
+     </div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
         <p>Configure bluetooth. Requires a reset.</p>
@@ -213,6 +219,39 @@
             };
             xhttp.open("GET", "readADC", true);
             xhttp.send();
+        }
+    </script>
+    <script type = "text/javascript">
+        var webSocket   = null;
+        function wsStop() {
+            webSocket.close();
+        }
+        function wsStart() {
+            var webSocketURL = "ws://" + location.hostname + ":8080";
+            console.log("openWSConnection::Connecting to: " + webSocketURL);
+            try {
+                webSocket = new WebSocket(webSocketURL);
+                webSocket.onopen = function(openEvent) {
+                    console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
+                    document.getElementById("nmeaStreamStart").disabled = true;
+                    document.getElementById("nmeaStreamStop").disabled = false;
+                };
+                webSocket.onclose = function (closeEvent) {
+                    console.log("WebSocket CLOSE: " + JSON.stringify(closeEvent, null, 4));
+                    document.getElementById("nmeaStreamStart").disabled = false;
+                    document.getElementById("nmeaStreamStop").disabled = true;
+                };
+                webSocket.onerror = function (errorEvent) {
+                    console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
+                };
+                webSocket.onmessage = function (messageEvent) {
+                    var textarea = document.getElementById("nmeaStreamPrint");
+                    textarea.value += messageEvent.data + "\r\n";
+                    textarea.scrollTop = textarea.scrollHeight;
+                };
+            } catch (exception) {
+                console.error(exception);
+            }
         }
     </script>
 </body>

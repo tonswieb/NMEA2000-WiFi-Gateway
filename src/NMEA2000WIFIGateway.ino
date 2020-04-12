@@ -27,16 +27,16 @@
 #include <Wire.h>
 #include <WebServer.h>
 #include "PreferenceRequestHandler.h"
-
+#include <WebSocketsServer.h>
 
 N2KPreferences prefs;
 WifiConnection connection(&prefs);
 WebServer webserver(80);
+WebSocketsServer webSocket = WebSocketsServer(8080);
 SerialToNMEA0183 *aisReceiver;
 SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
 BluetoothSerial SerialBT;
-
 long Blink;
 double VCC = 0.0;
 CRGB leds[NUM_LEDS];
@@ -47,6 +47,7 @@ std::function<void(char *)> messageCallback = [](char *message) {
   {
     SerialBT.println(message);
   }
+  webSocket.broadcastTXT(message);
   Serial.println(message);
 };
 
@@ -96,6 +97,7 @@ void setup()
   SPIFFS.begin();
   webserver.addHandler(new PreferenceRequestHandler(&prefs));
   webserver.begin();
+  webSocket.begin();
   nk2To0183 = new tN2kDataToNMEA0183(&NMEA2000, messageCallback);
   aisReceiver = new SerialToNMEA0183(&Serial1, messageCallback);
   nmea0183Receiver = new SerialToNMEA0183(&Serial2, messageCallback);
@@ -110,6 +112,8 @@ void setup()
 void loop()
 {
   webserver.handleClient();
+  webSocket.loop();
+
   ArduinoOTA.handle();
   SendN2KMessages();
 
