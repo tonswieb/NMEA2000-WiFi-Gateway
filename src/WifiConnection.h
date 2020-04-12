@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <N2KPreferences.h>
+#include <NMEA2000WiFiGateway.h>
 
 class WifiConnection
 {
