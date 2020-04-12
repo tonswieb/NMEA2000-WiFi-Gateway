@@ -10,6 +10,15 @@ N2KPreferences::~N2KPreferences() {
 void N2KPreferences::begin() {
 
     prefs.begin(PREF_SPACE);
+    init();
+}
+
+void N2KPreferences::end() {
+    prefs.end();
+}
+
+void N2KPreferences::init() {
+
     blEnabled = prefs.getBool(PREF_BLUETOOTH_ENABLED,false);
     demoEnabled = prefs.getBool(PREF_DEMO_ENABLED, false);
     udpPort = prefs.getUInt(PREF_WIFI_UDP_PORT, 9876);
@@ -21,8 +30,14 @@ void N2KPreferences::begin() {
     apPassword = prefs.getString(PREF_WIFI_AP_PASSWORD, WIFI_AP_DEFAULT_PASSWORD);
 }
 
-void N2KPreferences::end() {
-    prefs.end();
+void N2KPreferences::reset() {
+    prefs.clear();
+    ESP.restart();
+}
+
+void N2KPreferences::factoryReset() {
+    nvs_flash_erase();
+    ESP.restart();
 }
 
 void N2KPreferences::setBlEnabled(bool value) {

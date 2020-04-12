@@ -2,6 +2,8 @@
 #define _N2KPREFERENCES_H_
 
 #include <Preferences.h>
+#include <nvs.h>
+#include <nvs_flash.h>
 
 class N2KPreferences {
 
@@ -27,6 +29,12 @@ private:
   String apSSID;
   String apPassword;
 
+  /**
+   * Initialize fields from preferences namespace or initialize with default 
+   * value if field is not (yet) stored in preference namespace.
+   */
+  void init();
+
 public:
   const char *PREF_SPACE = "N2k-bridge";
   const char *PREF_BLUETOOTH_ENABLED = "blEnabled";
@@ -44,6 +52,16 @@ public:
 
   void begin();
   void end();
+  /**
+   * Reset all preferences set through this class and reboot the ESP.
+   */
+  void reset();
+  /**
+   * Erase the complete NVS Partition. and reboot the ESP. Which removes the preferences set 
+   * by this class as well as the preferences set in different namespaces from 
+   * other components.
+   */
+  void factoryReset();
   void setBlEnabled(bool value);
   bool isBlEnabled();
   void setDemoEnabled(bool value);

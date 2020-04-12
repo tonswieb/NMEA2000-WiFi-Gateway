@@ -19,31 +19,50 @@ public:
 
     bool canHandle(HTTPMethod requestMethod, String requestUri) override
     {
-        return true;
+        return requestMethod == HTTP_POST || requestMethod == HTTP_GET;
     }
 
     bool handle(WebServer &server, HTTPMethod requestMethod, String requestUri) override
     {
         if (requestMethod == HTTP_POST) {
-            Serial.println("Handling upload: " + requestUri);
-            _prefs->setBlEnabled(server.arg(_prefs->PREF_BLUETOOTH_ENABLED).equals("on"));
-            _prefs->setDemoEnabled(server.arg(_prefs->PREF_DEMO_ENABLED).equals("on"));
-            _prefs->setStationEnabled(server.arg(_prefs->PREF_WIFI_STA_ENABLED).equals("on"));
-            _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
-            _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
-            _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
-            _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
-            _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
-            //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
-            _prefs->setUdpBroadcastPort(server.arg(_prefs->PREF_WIFI_UDP_PORT).toInt());
-            server.send(204);
-            // ESP.restart();
-        } else if (requestUri.equals("/readADC")) {
-            server.send(200, "text/plane", String(VCC));
-        } else if (requestUri.equals("/favicon.ico")) {
-            server.send(404, "text/plain", "FileNotFound");
-        } else if (!handleFileRead(server)) {
-            server.send(404, "text/plain", "FileNotFound");
+            Serial.println("Handling Form POST: " + requestUri);
+            if (requestUri.equals("/demoSettings")) {
+                _prefs->setDemoEnabled(server.arg(_prefs->PREF_DEMO_ENABLED).equals("on"));
+                server.send(204);
+            } else if (requestUri.equals("/bluetoothSettings")) {
+                _prefs->setBlEnabled(server.arg(_prefs->PREF_BLUETOOTH_ENABLED).equals("on"));
+                server.send(204);
+            } else if (requestUri.equals("/wifiSettings")) {
+                _prefs->setStationEnabled(server.arg(_prefs->PREF_WIFI_STA_ENABLED).equals("on"));
+                _prefs->setStationHostname(server.arg(_prefs->PREF_WIFI_STA_HOSTNAME));
+                _prefs->setStationSSID(server.arg(_prefs->PREF_WIFI_STA_SSID));
+                _prefs->setStationPassword(server.arg(_prefs->PREF_WIFI_STA_PASSWORD));
+                _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
+                _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
+                //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
+                _prefs->setUdpBroadcastPort(server.arg(_prefs->PREF_WIFI_UDP_PORT).toInt());
+                server.send(204);
+            } else {
+                Serial.println("Received unknown form POST: " + requestUri);
+                server.send(404, "text/plain", "FileNotFound");          
+            }
+        } else {
+            if (requestUri.equals("/readADC")) {
+                server.send(200, "text/plane", String(VCC));
+            } else if (requestUri.equals("/reboot")) {
+                server.send(200);
+                ESP.restart();
+            } else if (requestUri.equals("/reset")) {
+                server.send(200);
+                _prefs->reset();
+            } else if (requestUri.equals("/factoryReset")) {
+                server.send(200);
+                _prefs->factoryReset();
+            } else if (requestUri.equals("/favicon.ico")) {
+                server.send(404, "text/plain", "FileNotFound");
+            } else if (!handleFileRead(server)) {
+                server.send(404, "text/plain", "FileNotFound");
+            }
         }
         return true;
     }

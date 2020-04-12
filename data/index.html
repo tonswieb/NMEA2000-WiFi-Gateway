@@ -14,15 +14,64 @@
            grid-template-columns: 1fr 1fr;
            grid-gap: 4px;
         }
+        fieldset {
+            grid-column: 1 / 3;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 4px;
+        }
+        h2,
         label {
             grid-column: 1 / 2;
         }
- 
         input,
         button {
             grid-column: 2 / 3;
-        }        
-        </style>
+        }
+        
+        /* Style the tab */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            animation: fadeEffect 1s; /* Fading effect takes 1 second */
+        }
+
+        /* Go from zero to full opacity */
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -30,60 +79,114 @@
 </head>
 
 <body>
-    <div class="container">
-    <div class="header">
-        <h1>N2K - Bridge</h1>
+    <div class="tab">
+        <button id='tabGeneral' class="tablinks" onclick="showTab(event, 'General')">General</button>
+        <button class="tablinks" onclick="showTab(event, 'Bluetooth')">Bluetooth</button>
+        <button class="tablinks" onclick="showTab(event, 'WIFI')">WIFI</button>
+        <button class="tablinks" onclick="showTab(event, 'Reset')">Reset</button>
     </div>
-    <div class="body">
-    <form name="allData">
+
+    <!-- Tab content -->
+    <div id="General" class="tabcontent">
+        <h3>General</h3>
         <div class="card">
             <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
         </div>
-
-        <input type="hidden" id="handleForm" name="handleForm" value="1">
-
-        <label for="blEnabled">Bluetooth Enabled</label>
-        <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
-
-        <label for="demoEnabled">Demo data Enabled</label>
-        <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
-
-        <label for="wifiStaEnabled">Use WIFI Station</label>
-        <input type="checkbox" id="wifiStaEnabled" name="wifiStaEnabled" $wifiStaEnabled /><br>
-
-        <label for="wifiStaHostname">WIFI Station - Hostname</label>
-        <input type="text" id="wifiStaHostname" name="wifiStaHostname" value="$wifiStaHostname" /><br>
-
-        <label for="wifiStaSsid">WIFI Station - SSID</label>
-        <input type="text" id="wifiStaSsid" name="wifiStaSsid" value="$wifiStaSsid" /><br>
-
-        <label for="wifiStaPassw">WIFI Station - Password</label>
-        <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>
-
-        <label for="wifiApSsid">WIFI Access Point - SSID</label>
-        <input type="text" id="wifiApSsid" name="wifiApSsid" value="$wifiApSsid" /><br>
-
-        <label for="wifiApPassword">WIFI Access Point - Password</label>
-        <input type="password" id="wifiApPassword" name="wifiApPassword" value="$wifiApPassword" /><br>
-
-        <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
-        <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
-
-        <button type="button" onclick="submitForm()">Submit</button> 
-        <br /><br /><br />
-    </form>
+        <form name="demoSettings">
+            <label for="demoEnabled">Demo data Enabled</label>
+            <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
+            <button type="button" onclick="submitForm(this.form.name)">Save Demo Settings</button> 
+        </form>
     </div>
+    <div id="Bluetooth" class="tabcontent">
+        <h3>Bluetooth</h3>
+        <p>Configure bluetooth. Requires a reset.</p>
+        <form name="bluetoothSettings">
+            <label for="blEnabled">Bluetooth Enabled</label>
+            <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
+            <button type="button" onclick="submitForm(this.form.name)">Save Bluetooth Settings</button> 
+        </form>
+    </div>  
+    <div id="WIFI" class="tabcontent">
+        <h3>WIFI</h3>
+        <p>Configure wifi. Requires a reset.</p>
+        <form name="wifiSettings">
+            <h2>General WIFI settings</h2>
+            <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
+            <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
+    
+            <label for="wifiStaEnabled">Use WIFI Station</label>
+            <input type="checkbox" id="wifiStaEnabled" onchange="toggleWifiStationOrAPVisibility(this.checked)" name="wifiStaEnabled" $wifiStaEnabled /><br>
+            <h2>WIFI Station</h2>
+            <fieldset name="wifiStation" disabled>
+                <label for="wifiStaHostname">Hostname</label>
+                <input type="text" id="wifiStaHostname" name="wifiStaHostname" value="$wifiStaHostname" /><br>
+        
+                <label for="wifiStaSsid">SSID</label>
+                <input type="text" id="wifiStaSsid" name="wifiStaSsid" value="$wifiStaSsid" /><br>
+        
+                <label for="wifiStaPassw">Password</label>
+                <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>    
+            </fieldset>
+            <h2>WIFI Access Point</h2>
+            <fieldset name="wifiAP">
+                <label for="wifiApSsid">SSID</label>
+                <input type="text" id="wifiApSsid" name="wifiApSsid" value="$wifiApSsid" /><br>
+    
+                <label for="wifiApPassword">Password</label>
+                <input type="password" id="wifiApPassword" name="wifiApPassword" value="$wifiApPassword" /><br>
+            </fieldset>
+            <button type="button" onclick="submitForm(this.form.name)">Save WIFI settings</button> 
+        </form>
+    </div>
+    <div id="Reset" class="tabcontent">
+        <p>Danger zone!</p>
+        <button name="reboot" type="button" onclick="executeAction(this.name)">Reboot ESP</button> <br>
+        <button name="reset" type="button" onclick="executeAction(this.name)">Reset</button> <br>
+        <button name="factoryReset" type="button" onclick="executeAction(this.name)">Factory Reset</button> 
     </div>
     <script>
-        function submitForm() {
-            // var formElement = document.querySelector("allData");
-            var formElement = document.forms.namedItem("allData");
-            var formData = new FormData(formElement);
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "submitAll", true);
-            xhttp.send(formData);
+        //Show General tab by default.
+        document.getElementById("tabGeneral").click();        
+
+        function showTab(evt, cityName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
         }
 
+        function toggleWifiStationOrAPVisibility(checked) {
+            document.getElementsByName("wifiStation")[0].disabled = !checked;
+            document.getElementsByName("wifiAP")[0].disabled = checked;
+        }
+        function executeAction(action) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", action, true);
+            xhttp.send();
+        }
+
+        function submitForm(formName) {
+            var formElement = document.forms.namedItem(formName);
+            var formData = new FormData(formElement);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", formName, true);
+            xhttp.send(formData);
+        }
 
         setInterval(function () {
             // Call a function repetatively with 2 Second interval
