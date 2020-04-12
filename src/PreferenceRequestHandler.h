@@ -29,6 +29,12 @@ public:
             if (requestUri.equals("/demoSettings")) {
                 _prefs->setDemoEnabled(String("on").equals(server.arg(_prefs->PREF_DEMO_ENABLED)));
                 server.send(204);
+            } else if (requestUri.equals("/nmeaSettings")) {
+                _prefs->setNmeaToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_SERIAL)));
+                _prefs->setNmeaToSocket(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_SOCKET)));
+                _prefs->setNmeaToBluetooth(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_BL)));
+                _prefs->setNmeaToUDP(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_UDP)));
+                server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
                 _prefs->setBlEnabled(String("on").equals(server.arg(_prefs->PREF_BLUETOOTH_ENABLED)));
                 server.send(204);
@@ -50,9 +56,7 @@ public:
                 server.send(404, "text/plain", "FileNotFound");          
             }
         } else {
-            if (requestUri.equals("/readADC")) {
-                server.send(200, "text/plane", String(VCC));
-            } else if (requestUri.equals("/reboot")) {
+            if (requestUri.equals("/reboot")) {
                 server.send(200);
                 ESP.restart();
             } else if (requestUri.equals("/reset")) {
@@ -177,6 +181,10 @@ protected:
             content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
             content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
             content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
+            content.replace(getVar(_prefs->PREF_NMEA_TO_SERIAL), _prefs->isNmeaToSerial() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_NMEA_TO_SOCKET), _prefs->isNmeaToSocket() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_NMEA_TO_BL), _prefs->isNmeaToBluetooth() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_NMEA_TO_UDP), _prefs->isNmeaToUDP() ? "checked" : "");
             server.send(200, "text/html", content);
         } else {
             String contentType = getContentType(server, path);

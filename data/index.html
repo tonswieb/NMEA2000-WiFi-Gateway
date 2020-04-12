@@ -106,9 +106,21 @@
         </form>
     </div>
     <div id="NMEAStream" class="tabcontent"> 
-        <button id="nmeaStreamStart" type="button" onclick="wsStart()">Start</button> 
-        <button id="nmeaStreamStop" type="button" onclick="wsStop()" disable="disabled">Stop</button> <br>
-        <textarea id="nmeaStreamPrint" rows="10" cols="100" disabled="disabled"></textarea>
+        <form name="nmeaSettings">
+            <h2>Send NMEA to</h2>
+            <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
+            <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
+            <label for="nmeaToSerial">Console</label>
+            <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial" $nmeaToSerial /><br>
+            <label for="nmeaToSocket">Browser</label>
+            <input type="checkbox" id="nmeaToSocket" name="nmeaToSocket" $nmeaToSocket /><br>
+            <label for="nmeaToBl">Bluetooth</label>
+            <input type="checkbox" id="nmeaToBl" name="nmeaToBl" $nmeaToBl /><br>
+            <label for="nmeaToUDP">WIFI UDP</label>
+            <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP" $nmeaToUDP /><br>
+            <button type="button" onclick="submitForm(this.form.name)">Save NMEA Settings</button> 
+        </form>
+        <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>
      </div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
@@ -202,27 +214,10 @@
             xhttp.open("POST", formName, true);
             xhttp.send(formData);
         }
-
-        setInterval(function () {
-            // Call a function repetatively with 2 Second interval
-            getData();
-        }, 2000); //2000mSeconds update rate
-
-        function getData() {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById(
-                        "ADCValue"
-                    ).innerHTML = this.responseText;
-                }
-            };
-            xhttp.open("GET", "readADC", true);
-            xhttp.send();
-        }
     </script>
     <script type = "text/javascript">
         var webSocket   = null;
+        wsStart();
         function wsStop() {
             webSocket.close();
         }
@@ -233,21 +228,22 @@
                 webSocket = new WebSocket(webSocketURL);
                 webSocket.onopen = function(openEvent) {
                     console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
-                    document.getElementById("nmeaStreamStart").disabled = true;
-                    document.getElementById("nmeaStreamStop").disabled = false;
                 };
                 webSocket.onclose = function (closeEvent) {
                     console.log("WebSocket CLOSE: " + JSON.stringify(closeEvent, null, 4));
-                    document.getElementById("nmeaStreamStart").disabled = false;
-                    document.getElementById("nmeaStreamStop").disabled = true;
                 };
                 webSocket.onerror = function (errorEvent) {
                     console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
                 };
                 webSocket.onmessage = function (messageEvent) {
-                    var textarea = document.getElementById("nmeaStreamPrint");
-                    textarea.value += messageEvent.data + "\r\n";
-                    textarea.scrollTop = textarea.scrollHeight;
+                    var message = messageEvent.data;
+                    if (message.startsWith("N:")) {
+                        var textarea = document.getElementById("nmeaStreamPrint");
+                        textarea.value += message.replace("N:","") + "\r\n";
+                        textarea.scrollTop = textarea.scrollHeight;
+                    } else if (message.startsWith("V:")) {
+                        document.getElementById("ADCValue").innerHTML = message.replace("V:","");
+                    }
                 };
             } catch (exception) {
                 console.error(exception);

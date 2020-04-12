@@ -12,15 +12,21 @@ private:
   const String WIFI_AP_DEFAULT_PASSWORD = "ChangeMe";
 
   Preferences prefs;
-  volatile bool blEnabled;
-  volatile bool demoEnabled;
+  bool blEnabled;
+  bool demoEnabled;
+
+  //NMEA preferences
+  bool nmeaToSerial;
+  bool nmeaToWebSocket;
+  bool nmeaToBluetooth;
+  bool nmeaToUdp;
 
   //TODO: Move WIFI preferences to own class
   //WIFI General preferences
   int udpPort;
 
   //WIFI Station preferences
-  volatile bool staEnabled;
+  bool staEnabled;
   String stationHostname;
   String staSSID;
   String staPassword;
@@ -46,6 +52,10 @@ public:
   const char *PREF_WIFI_AP_SSID = "wifiApSsid";
   const char *PREF_WIFI_AP_PASSWORD = "wifiApPassword";
   const char *PREF_WIFI_UDP_PORT = "wifiUdpPort";
+  const char *PREF_NMEA_TO_SOCKET = "nmeaToSocket";
+  const char *PREF_NMEA_TO_SERIAL = "nmeaToSerial";
+  const char *PREF_NMEA_TO_BL = "nmeaToBl";
+  const char *PREF_NMEA_TO_UDP = "nmeaToUDP";
 
   N2KPreferences();
   ~N2KPreferences();
@@ -85,7 +95,17 @@ public:
   void setApSSID(const String apSSID);
   const char * getApSSID();
   void setApPassword(const String apPassword);
-  const char * getApPassword();  
+  const char * getApPassword();
+
+  //NMEA Preferens
+  void setNmeaToSerial(bool value);
+  bool isNmeaToSerial();
+  void setNmeaToSocket(bool value);
+  bool isNmeaToSocket();
+  void setNmeaToBluetooth(bool value);
+  bool isNmeaToBluetooth();
+  void setNmeaToUDP(bool value);
+  bool isNmeaToUDP();
 };
 
 #endif

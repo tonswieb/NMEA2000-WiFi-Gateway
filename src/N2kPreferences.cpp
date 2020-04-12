@@ -28,6 +28,10 @@ void N2KPreferences::init() {
     staPassword = prefs.getString(PREF_WIFI_STA_PASSWORD);
     apSSID = prefs.getString(PREF_WIFI_AP_SSID, WIFI_AP_DEFAULT_SSID);
     apPassword = prefs.getString(PREF_WIFI_AP_PASSWORD, WIFI_AP_DEFAULT_PASSWORD);
+    nmeaToSerial = prefs.getBool(PREF_NMEA_TO_SERIAL,false);
+    nmeaToWebSocket = prefs.getBool(PREF_NMEA_TO_SOCKET, false);
+    nmeaToBluetooth = prefs.getBool(PREF_NMEA_TO_BL,true);
+    nmeaToUdp = prefs.getBool(PREF_NMEA_TO_UDP,true);
 }
 
 void N2KPreferences::reset() {
@@ -111,4 +115,34 @@ void N2KPreferences::setApPassword(const String apPassword) {
 }
 const char * N2KPreferences::getApPassword() {
     return apPassword.c_str();
+}
+
+//NMEA Preferens
+void N2KPreferences::setNmeaToSerial(bool value) {
+    prefs.putBool(PREF_NMEA_TO_SERIAL, value);
+    nmeaToSerial = value;
+}
+bool N2KPreferences::isNmeaToSerial() {
+    return nmeaToSerial;
+}
+void N2KPreferences::setNmeaToSocket(bool value) {
+    prefs.putBool(PREF_NMEA_TO_SOCKET, value);
+    nmeaToWebSocket = value;
+}
+bool N2KPreferences::isNmeaToSocket() {
+    return nmeaToWebSocket;
+}
+void N2KPreferences::setNmeaToBluetooth(bool value) {
+    prefs.putBool(PREF_NMEA_TO_BL, value);
+    nmeaToBluetooth = value;
+}
+bool N2KPreferences::isNmeaToBluetooth() {
+    return nmeaToBluetooth;
+}
+void N2KPreferences::setNmeaToUDP(bool value) {
+    prefs.putBool(PREF_NMEA_TO_UDP, value);
+    nmeaToUdp = value;
+}
+bool N2KPreferences::isNmeaToUDP() {
+    return nmeaToUdp;
 }

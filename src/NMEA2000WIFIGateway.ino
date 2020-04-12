@@ -38,17 +38,21 @@ SerialToNMEA0183 *nmea0183Receiver;
 tN2kDataToNMEA0183 *nk2To0183;
 BluetoothSerial SerialBT;
 long Blink;
-double VCC = 0.0;
 CRGB leds[NUM_LEDS];
 
 std::function<void(char *)> messageCallback = [](char *message) {
-  connection.sendUdpPackage(message);
-  if (prefs.isBlEnabled())
-  {
+  if (prefs.isNmeaToUDP()) {
+    connection.sendUdpPackage(message);
+  }
+  if (prefs.isNmeaToBluetooth()) {
     SerialBT.println(message);
   }
-  webSocket.broadcastTXT(message);
-  Serial.println(message);
+  if (prefs.isNmeaToSocket()) {
+    webSocket.broadcastTXT("N:" + String(message));
+  }
+  if (prefs.isNmeaToSerial()) {
+    Serial.println(message);
+  }
 };
 
 //*****************************************************************************
@@ -132,7 +136,8 @@ void loop()
       leds[0].green =5;
     }
     FastLED.show();
-    VCC = analogRead(Vin) * 3.6 * 5.7 / 4095;
+    double VCC = analogRead(Vin) * 3.6 * 5.7 / 4095;
+    webSocket.broadcastTXT("V:" + String(VCC));
   }
 }
 
