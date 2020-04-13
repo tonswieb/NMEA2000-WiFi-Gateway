@@ -1,81 +1,94 @@
 <!DOCTYPE html>
 <html>
-    <link rel="stylesheet" href="bootstrap-reboot.min.css">
-    <style>
-        * {
-          box-sizing: border-box;
+<link rel="stylesheet" href="bootstrap-reboot.min.css">
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 4px;
+    }
+
+    fieldset {
+        grid-column: 1 / 3;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 4px;
+    }
+
+    h2 {
+        grid-column: 1 / 3;
+    }
+
+    button {
+        grid-column: 1 / 3;
+        max-width: 200px;
+    }
+
+    label {
+        grid-column: 1 / 2;
+        max-width: 200px;
+    }
+
+    input {
+        grid-column: 2 / 3;
+        max-width: 200px;
+    }
+
+    /* Style the tab */
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+    }
+
+    /* Style the buttons that are used to open the tab content */
+    .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+        background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+        background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+        animation: fadeEffect 1s;
+        /* Fading effect takes 1 second */
+        background-color: #ddddee;
+    }
+
+    /* Go from zero to full opacity */
+    @keyframes fadeEffect {
+        from {
+            opacity: 0;
         }
 
-        form {
-           display: grid;
-           grid-template-columns: 1fr 1fr;
-           grid-gap: 4px;
+        to {
+            opacity: 1;
         }
-        fieldset {
-            grid-column: 1 / 3;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-gap: 4px;
-        }
-        h2 {
-            grid-column: 1 / 3;
-        }
-        button {
-            grid-column: 1 / 3;
-            max-width: 200px;
-        }
-        label {
-            grid-column: 1 / 2;
-            max-width: 200px;
-        }
-        input {
-            grid-column: 2 / 3;
-            max-width: 200px;
-        }
-        
-        /* Style the tab */
-        .tab {
-            overflow: hidden;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
-        }
+    }
+</style>
 
-        /* Style the buttons that are used to open the tab content */
-        .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
-        }
-
-        /* Change background color of buttons on hover */
-        .tab button:hover {
-            background-color: #ddd;
-        }
-
-        /* Create an active/current tablink class */
-        .tab button.active {
-            background-color: #ccc;
-        }
-
-        /* Style the tab content */
-        .tabcontent {
-            display: none;
-            padding: 6px 12px;
-            border: 1px solid #ccc;
-            border-top: none;
-            animation: fadeEffect 1s; /* Fading effect takes 1 second */
-        }
-
-        /* Go from zero to full opacity */
-        @keyframes fadeEffect {
-            from {opacity: 0;}
-            to {opacity: 1;}
-        }
-    </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -95,17 +108,17 @@
     <div id="General" class="tabcontent">
         <h3>General</h3>
         <div class="card">
-            <h1>Board voltage:<span id="ADCValue">0</span></h1><br />
+            NMEA2000 bus voltage: <span id="ADCValue">0</span>V<br>
         </div>
         <form name="demoSettings">
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="demoSettingsForm" name="demoSettingsForm" value="dummy" />
             <label for="demoEnabled">Demo data Enabled</label>
             <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
-            <button type="button" onclick="submitForm(this.form.name)">Save Demo Settings</button> 
+            <button type="button" onclick="submitForm(this.form.name)">Save Demo Settings</button>
         </form>
     </div>
-    <div id="NMEAStream" class="tabcontent"> 
+    <div id="NMEAStream" class="tabcontent">
         <form name="nmeaSettings">
             <h2>Send NMEA to</h2>
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
@@ -118,10 +131,10 @@
             <input type="checkbox" id="nmeaToBl" name="nmeaToBl" $nmeaToBl /><br>
             <label for="nmeaToUDP">WIFI UDP</label>
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP" $nmeaToUDP /><br>
-            <button type="button" onclick="submitForm(this.form.name)">Save NMEA Settings</button> 
+            <button type="button" onclick="submitForm(this.form.name)">Save NMEA Settings</button>
         </form>
         <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>
-     </div>
+    </div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
         <p>Configure bluetooth. Requires a reset.</p>
@@ -130,9 +143,9 @@
             <input type="hidden" id="bluetoothSettingsForm" name="bluetoothSettingsForm" value="dummy" />
             <label for="blEnabled">Bluetooth Enabled</label>
             <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
-            <button type="button" onclick="submitForm(this.form.name)">Save Bluetooth Settings</button> 
+            <button type="button" onclick="submitForm(this.form.name)">Save Bluetooth Settings</button>
         </form>
-    </div>  
+    </div>
     <div id="WIFI" class="tabcontent">
         <h3>WIFI</h3>
         <p>Configure wifi. Requires a reset.</p>
@@ -140,36 +153,37 @@
             <h2>General WIFI settings</h2>
             <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
             <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
-    
+
             <label for="wifiStaEnabled">Use WIFI Station</label>
-            <input type="checkbox" id="wifiStaEnabled" onchange="toggleWifiStationOrAPVisibility(this.checked)" name="wifiStaEnabled" $wifiStaEnabled /><br>
+            <input type="checkbox" id="wifiStaEnabled" onchange="toggleWifiStationOrAPVisibility(this.checked)"
+                name="wifiStaEnabled" $wifiStaEnabled /><br>
             <h2>WIFI Station</h2>
             <fieldset name="wifiStation" disabled>
                 <label for="wifiStaHostname">Hostname</label>
                 <input type="text" id="wifiStaHostname" name="wifiStaHostname" value="$wifiStaHostname" /><br>
-        
+
                 <label for="wifiStaSsid">SSID</label>
                 <input type="text" id="wifiStaSsid" name="wifiStaSsid" value="$wifiStaSsid" /><br>
-        
+
                 <label for="wifiStaPassw">Password</label>
-                <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>    
+                <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>
             </fieldset>
             <h2>WIFI Access Point</h2>
             <fieldset name="wifiAP">
                 <label for="wifiApSsid">SSID</label>
                 <input type="text" id="wifiApSsid" name="wifiApSsid" value="$wifiApSsid" /><br>
-    
+
                 <label for="wifiApPassword">Password</label>
                 <input type="password" id="wifiApPassword" name="wifiApPassword" value="$wifiApPassword" /><br>
             </fieldset>
-            <button type="button" onclick="submitForm(this.form.name)">Save WIFI settings</button> 
+            <button type="button" onclick="submitForm(this.form.name)">Save WIFI settings</button>
         </form>
     </div>
     <div id="Reset" class="tabcontent">
         <p>Danger zone!</p>
         <button name="reboot" type="button" onclick="executeAction(this.name)">Reboot ESP</button> <br>
         <button name="reset" type="button" onclick="executeAction(this.name)">Reset</button> <br>
-        <button name="factoryReset" type="button" onclick="executeAction(this.name)">Factory Reset</button> 
+        <button name="factoryReset" type="button" onclick="executeAction(this.name)">Factory Reset</button>
     </div>
     <script>
         //Show General tab by default.
@@ -215,8 +229,8 @@
             xhttp.send(formData);
         }
     </script>
-    <script type = "text/javascript">
-        var webSocket   = null;
+    <script type="text/javascript">
+        var webSocket = null;
         wsStart();
         function wsStop() {
             webSocket.close();
@@ -226,7 +240,7 @@
             console.log("openWSConnection::Connecting to: " + webSocketURL);
             try {
                 webSocket = new WebSocket(webSocketURL);
-                webSocket.onopen = function(openEvent) {
+                webSocket.onopen = function (openEvent) {
                     console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
                 };
                 webSocket.onclose = function (closeEvent) {
@@ -239,10 +253,10 @@
                     var message = messageEvent.data;
                     if (message.startsWith("N:")) {
                         var textarea = document.getElementById("nmeaStreamPrint");
-                        textarea.value += message.replace("N:","") + "\r\n";
+                        textarea.value += message.replace("N:", "") + "\r\n";
                         textarea.scrollTop = textarea.scrollHeight;
                     } else if (message.startsWith("V:")) {
-                        document.getElementById("ADCValue").innerHTML = message.replace("V:","");
+                        document.getElementById("ADCValue").innerHTML = message.replace("V:", "");
                     }
                 };
             } catch (exception) {
