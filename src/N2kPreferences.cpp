@@ -32,6 +32,8 @@ void N2KPreferences::init() {
     nmeaToWebSocket = prefs.getBool(PREF_NMEA_TO_SOCKET, false);
     nmeaToBluetooth = prefs.getBool(PREF_NMEA_TO_BL,true);
     nmeaToUdp = prefs.getBool(PREF_NMEA_TO_UDP,true);
+    nmea2000ToSerial = prefs.getBool(PREF_NMEA2000_TO_SERIAL,false);
+    nmea2000Mode = (tNMEA2000::tN2kMode) prefs.getUChar(PREF_NMEA2000_MODE, tNMEA2000::N2km_ListenOnly);
 }
 
 void N2KPreferences::reset() {
@@ -146,3 +148,18 @@ void N2KPreferences::setNmeaToUDP(bool value) {
 bool N2KPreferences::isNmeaToUDP() {
     return nmeaToUdp;
 }
+void N2KPreferences::setNmea2000ToSerial(bool value) {
+    prefs.putBool(PREF_NMEA2000_TO_SERIAL, value);
+    nmea2000ToSerial = value;
+}
+bool N2KPreferences::isNmea2000ToSerial() {
+    return nmea2000ToSerial;    
+}
+void N2KPreferences::setNmeaMode(tNMEA2000::tN2kMode value) {
+    prefs.putUChar(PREF_NMEA2000_MODE, value);
+    nmea2000Mode = value;
+}
+tNMEA2000::tN2kMode N2KPreferences::getNmeaMode() {
+    return nmea2000Mode;
+}
+

@@ -131,6 +131,17 @@
             <input type="checkbox" id="nmeaToBl" name="nmeaToBl" $nmeaToBl /><br>
             <label for="nmeaToUDP">WIFI UDP</label>
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP" $nmeaToUDP /><br>
+            <h2>NMEA 2000 Configuration:</h2>
+            <label for="nmea2000ToSerial">Log NMEA 2000 to Console</label>
+            <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial" $nmea2000ToSerial /><br>
+            <label for="nmea2000Mode">Mode</label>
+            <select id="nmea2000Mode" name="nmea2000Mode">
+                <option value="0" $nmea2000Mode0>Receive</option>
+                <option value="1" $nmea2000Mode1>Send</option>
+                <option value="2" $nmea2000Mode2>Receive and Send</option>
+                <option value="3" $nmea2000Mode3>Send (stealth)</option>
+                <option value="4" $nmea2000Mode4>Receive and Send (stealth)</option>
+              </select>             
             <button type="button" onclick="submitForm(this.form.name)">Save NMEA Settings</button>
         </form>
         <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>

@@ -1,3 +1,6 @@
+#ifndef _N2K_DATA_TO_NMEA0183_H_
+#define _N2K_DATA_TO_NMEA0183_H_
+
 /*
 N2kDataToNMEA0183.h
 
@@ -86,3 +89,5 @@ public:
   void HandleMsg(const tN2kMsg &N2kMsg);
   void Update();
 };
+
+#endif

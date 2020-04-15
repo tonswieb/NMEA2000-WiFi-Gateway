@@ -4,6 +4,7 @@
 #include <Preferences.h>
 #include <nvs.h>
 #include <nvs_flash.h>
+#include <NMEA2000.h>
 
 class N2KPreferences {
 
@@ -20,6 +21,10 @@ private:
   bool nmeaToWebSocket;
   bool nmeaToBluetooth;
   bool nmeaToUdp;
+
+  //NMEA200 preferences
+  bool nmea2000ToSerial;
+  tNMEA2000::tN2kMode nmea2000Mode;
 
   //TODO: Move WIFI preferences to own class
   //WIFI General preferences
@@ -56,6 +61,8 @@ public:
   const char *PREF_NMEA_TO_SERIAL = "nmeaToSerial";
   const char *PREF_NMEA_TO_BL = "nmeaToBl";
   const char *PREF_NMEA_TO_UDP = "nmeaToUDP";
+  const char *PREF_NMEA2000_TO_SERIAL = "n2kToSerial";
+  const char *PREF_NMEA2000_MODE = "nmea2000Mode";
 
   N2KPreferences();
   ~N2KPreferences();
@@ -97,7 +104,7 @@ public:
   void setApPassword(const String apPassword);
   const char * getApPassword();
 
-  //NMEA Preferens
+  //NMEA Preferences
   void setNmeaToSerial(bool value);
   bool isNmeaToSerial();
   void setNmeaToSocket(bool value);
@@ -106,6 +113,12 @@ public:
   bool isNmeaToBluetooth();
   void setNmeaToUDP(bool value);
   bool isNmeaToUDP();
+
+  //NMEA2000 Preferences
+  void setNmea2000ToSerial(bool value);
+  bool isNmea2000ToSerial();
+  void setNmeaMode(tNMEA2000::tN2kMode value);
+  tNMEA2000::tN2kMode getNmeaMode();
 };
 
 #endif
