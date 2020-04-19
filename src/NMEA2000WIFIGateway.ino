@@ -65,12 +65,14 @@ void setup()
     Serial.println("Initializing bluetooth.");
     SerialBT.begin("N2K-bridge");
   }
+
   logger = new Logger(&Serial,DEBUG_LEVEL_TRACE);
   pSerial1ToN2k = new StreamToN183(&Serial1, messageCallback);
   pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
   pUdpToN2k =  new N183ToN2k(&NMEA2000, connection.getUdpPackageStream(), logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
   pN2kToN183 = new N2kToN183(&NMEA2000, messageCallback);
   InitNMEA2000(&prefs,pN2kToN183);
+  prefs.freeEntries();
 }
 
 //*****************************************************************************

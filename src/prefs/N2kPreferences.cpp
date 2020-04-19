@@ -13,27 +13,35 @@ void N2KPreferences::begin() {
     init();
 }
 
+void N2KPreferences::freeEntries() {
+
+    Serial.println("[PREF] Free Entries: " + prefs.freeEntries());
+}
+
+
 void N2KPreferences::end() {
     prefs.end();
 }
 
 void N2KPreferences::init() {
 
-    blEnabled = prefs.getBool(PREF_BLUETOOTH_ENABLED,false);
-    demoEnabled = prefs.getBool(PREF_DEMO_ENABLED, false);
-    udpPort = prefs.getUInt(PREF_WIFI_UDP_PORT, 9876);
-    staEnabled = prefs.getBool(PREF_WIFI_STA_ENABLED, false);
-    stationHostname = prefs.getString(PREF_WIFI_STA_HOSTNAME);
-    staSSID = prefs.getString(PREF_WIFI_STA_SSID);
-    staPassword = prefs.getString(PREF_WIFI_STA_PASSWORD);
-    apSSID = prefs.getString(PREF_WIFI_AP_SSID, WIFI_AP_DEFAULT_SSID);
-    apPassword = prefs.getString(PREF_WIFI_AP_PASSWORD, WIFI_AP_DEFAULT_PASSWORD);
-    nmeaToSerial = prefs.getBool(PREF_NMEA_TO_SERIAL,false);
-    nmeaToWebSocket = prefs.getBool(PREF_NMEA_TO_SOCKET, false);
-    nmeaToBluetooth = prefs.getBool(PREF_NMEA_TO_BL,true);
-    nmeaToUdp = prefs.getBool(PREF_NMEA_TO_UDP,true);
-    nmea2000ToSerial = prefs.getBool(PREF_NMEA2000_TO_SERIAL,false);
-    nmea2000Mode = (tNMEA2000::tN2kMode) prefs.getUChar(PREF_NMEA2000_MODE, tNMEA2000::N2km_ListenOnly);
+    //Retrieve settings, use default if missing and store
+    //directly to ensure that everything fits in NVS.
+    setBlEnabled(prefs.getBool(PREF_BLUETOOTH_ENABLED,false));
+    setDemoEnabled(prefs.getBool(PREF_DEMO_ENABLED, false));
+    setUdpBroadcastPort(prefs.getUInt(PREF_WIFI_UDP_PORT, 9876));
+    setStationEnabled(prefs.getBool(PREF_WIFI_STA_ENABLED, false));
+    setStationHostname(prefs.getString(PREF_WIFI_STA_HOSTNAME));
+    setStationSSID(prefs.getString(PREF_WIFI_STA_SSID));
+    setStationPassword(prefs.getString(PREF_WIFI_STA_PASSWORD));
+    setApSSID(prefs.getString(PREF_WIFI_AP_SSID, WIFI_AP_DEFAULT_SSID));
+    setApPassword(prefs.getString(PREF_WIFI_AP_PASSWORD, WIFI_AP_DEFAULT_PASSWORD));
+    setNmeaToSerial(prefs.getBool(PREF_NMEA_TO_SERIAL,false));
+    setNmeaToSocket(prefs.getBool(PREF_NMEA_TO_SOCKET, false));
+    setNmeaToBluetooth(prefs.getBool(PREF_NMEA_TO_BL,true));
+    setNmeaToUDP(prefs.getBool(PREF_NMEA_TO_UDP,true));
+    setNmea2000ToSerial(prefs.getBool(PREF_NMEA2000_TO_SERIAL,false));
+    setNmeaMode((tNMEA2000::tN2kMode) prefs.getUChar(PREF_NMEA2000_MODE, tNMEA2000::N2km_ListenOnly));
 }
 
 void N2KPreferences::reset() {

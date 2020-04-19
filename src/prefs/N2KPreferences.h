@@ -68,6 +68,7 @@ public:
   ~N2KPreferences();
 
   void begin();
+  void freeEntries();
   void end();
   /**
    * Reset all preferences set through this class and reboot the ESP.
