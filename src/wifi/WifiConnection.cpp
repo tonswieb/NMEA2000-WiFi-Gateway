@@ -14,9 +14,11 @@ void WifiConnection::begin() {
 
     setupWIFI();
     setup_OTA();
+    udp.begin(9877);
 }
 
 void WifiConnection::end() {
+    
 }
 
 void WifiConnection::setupWIFI()
