@@ -84,6 +84,7 @@ void loop()
   hardware.loop();
   pSerial2ToN2k->handleLoop();
   pUdpToN2k->handleLoop();
+  connection.loop();
 
   if (prefs.isDemoEnabled()) {
     SendN2KMessages(pN2kToN183);
