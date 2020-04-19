@@ -77,7 +77,7 @@ void Route::addCoordinates(const char* src, double latitude, double longitude) {
     } else if (equalName(src)) {
       waypoints[index].latitude = latitude;
       waypoints[index].longitude = longitude;
-      trace("WPL: Time=%u, Name=%s, Latitude=%s, Longitude=%s",millis(),waypoints[index].name,toString(waypoints[index].latitude,6,2),toString(waypoints[index].longitude,6,2));
+      trace("WPL: Time=%u, Name=%s, Latitude=%s, Longitude=%s",millis(),waypoints[index].name,toLogString(waypoints[index].latitude,6,2),toLogString(waypoints[index].longitude,6,2));
       index++;     
     } else {
       //Invalidate the route. Apparently the RTE messages are not in sync with the WPL messages.

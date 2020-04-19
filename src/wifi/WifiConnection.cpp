@@ -10,7 +10,6 @@ WifiConnection::~WifiConnection()
     end();
 }
 
-
 void WifiConnection::begin() {
 
     setupWIFI();
@@ -100,4 +99,12 @@ void WifiConnection::sendUdpPackage(char *buf)
     udp.beginPacket(ipLok, prefs->getUdpBroadcastPort());
     udp.println(buf);
     udp.endPacket();
+}
+
+Stream* WifiConnection::getUdpPackageStream() {
+    return &udpStream;
+}
+
+void WifiConnection::loop() {
+  ArduinoOTA.handle();
 }

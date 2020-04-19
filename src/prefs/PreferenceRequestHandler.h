@@ -6,7 +6,6 @@
 #include <detail/RequestHandler.h>
 #include <HTTP_Method.h>
 #include "N2KPreferences.h"
-#include "NMEA2000WiFiGateway.h"
 #define FILESYSTEM SPIFFS
 
 class PreferenceRequestHandler : public RequestHandler

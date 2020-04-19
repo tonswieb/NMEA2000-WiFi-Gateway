@@ -1,6 +1,6 @@
 #include "demo.h"
 
-void SendN2KMessages(tN2kDataToNMEA0183 *nk2To0183) {
+void SendN2KMessages(N2kToN183 *pN2kToN183) {
   unsigned char seq = 1;
   uint16_t DaysSince1970 = 18090;
   double magHeading = 290.0;
@@ -29,22 +29,22 @@ void SendN2KMessages(tN2kDataToNMEA0183 *nk2To0183) {
     Updated = millis();
 
     SetN2kTrueHeading(N2kMsg, seq, magHeading + variation);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kMagneticHeading(N2kMsg, seq, magHeading, deviation, variation);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kMagneticVariation(N2kMsg, seq, N2kmagvar_Manual, DaysSince1970, variation);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kBoatSpeed(N2kMsg, seq, waterSpeed, groundSpeed, N2kSWRT_Paddle_wheel);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kWaterDepth(N2kMsg, seq, depthBelowTransducer, depthTransducerOffset);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kLatLonRapid(N2kMsg, lat, lon);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kCOGSOGRapid(N2kMsg, seq, N2khr_magnetic, cog, sog);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kWindSpeed(N2kMsg, seq, windSpeed, windAngle, N2kWind_Apparent);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
     SetN2kGNSS(N2kMsg, seq, DaysSince1970, SecondsSinceMidnight, lat, lon, altitude, N2kGNSSt_GPSSBASWAASGLONASS, N2kGNSSm_PreciseGNSS, nSatellites, HDOP);
-    nk2To0183->HandleMsg(N2kMsg);
+    pN2kToN183->HandleMsg(N2kMsg);
   }
 }

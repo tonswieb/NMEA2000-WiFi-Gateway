@@ -1,8 +1,11 @@
+#ifndef _STREAM_TO_N183_H_
+#define _STREAM_TO_N183_H_
+
 #include <Arduino.h>
 #include <functional>
 #define MAX_NMEA0183_MSG_BUF_LEN 81  //According to NMEA 3.01. Can not contain multi message as in AIS
 
-class SerialToNMEA0183 {
+class StreamToN183 {
     
 private:
   //Variables to keep track on received message
@@ -16,6 +19,8 @@ private:
   bool parseMessage();
 
 public:
-  SerialToNMEA0183(Stream* serialIn, std::function<void (char*)> handler_func);
+  StreamToN183(Stream* serialIn, std::function<void (char*)> handler_func);
   void loop();
 };
+
+#endif

@@ -24,10 +24,10 @@ Author: Timo Lappalainen, Ton Swieb
 #include <NMEA0183Msg.h>
 #include <NMEA0183Messages.h>
 #include <Time.h>
-#include "Log.h"
+#include "util/Log.h"
 #include "Route.h"
 
-class NMEA0183Gateway {
+class N183ToN2k {
 
   private:  
     unsigned long DaysSince1970;   // Days since 1970-01-01
@@ -59,7 +59,7 @@ class NMEA0183Gateway {
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
   
   public:
-    NMEA0183Gateway(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
+    N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
     void handleLoop();
 };
 

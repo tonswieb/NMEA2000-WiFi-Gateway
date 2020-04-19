@@ -39,7 +39,7 @@ Author: Ton Swieb
 #define info(fmt, ...) if (logger!=0) {logger->logInfo(F(fmt), ##__VA_ARGS__);}
 #define debug(fmt, ...) if (logger!=0) {logger->logDebug(F(fmt), ##__VA_ARGS__);}
 #define trace(fmt, ...) if (logger!=0) {logger->logTrace(F(fmt), ##__VA_ARGS__);}
-#define toString(__val, __width, __prec) logger !=0 ? logger->doubleToString(__val,__width,__prec) : NULL
+#define toLogString(__val, __width, __prec) logger !=0 ? logger->doubleToString(__val,__width,__prec) : NULL
 
 class Logger {
 

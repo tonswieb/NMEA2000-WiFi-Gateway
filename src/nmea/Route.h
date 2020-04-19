@@ -15,8 +15,8 @@ Author: Ton Swieb
 #define _Route_H_
 
 #include <Arduino.h>
-#include "Log.h"
-#include "PrintfWrapper.h"
+#include "util/Log.h"
+#include "util/PrintfWrapper.h"
 
 /*
  * Defaults for Garmin GPS120 / Garmin GPS 12.

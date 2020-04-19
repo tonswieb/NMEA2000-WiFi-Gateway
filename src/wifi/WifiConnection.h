@@ -5,8 +5,8 @@
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
-#include <N2KPreferences.h>
-#include <NMEA2000WiFiGateway.h>
+#include <prefs/N2KPreferences.h>
+#include "UdpStream.h"
 
 class WifiConnection
 {
@@ -15,6 +15,7 @@ private:
   N2KPreferences *prefs;
   IPAddress ipLok;
   WiFiUDP udp;
+  UdpStream udpStream = UdpStream(&udp);
 
   void setupWIFI();
   void setup_OTA();
@@ -24,7 +25,9 @@ public:
   ~WifiConnection();
   void begin();
   void end();
+  void loop();
   void sendUdpPackage(char *message);
+  Stream* getUdpPackageStream();
 };
 
 #endif

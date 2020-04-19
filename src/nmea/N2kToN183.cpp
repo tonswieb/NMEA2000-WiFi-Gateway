@@ -21,16 +21,15 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "N2kDataToNMEA0183.h"
+#include "N2kToN183.h"
 #include <N2kMessages.h>
 #include <NMEA0183Messages.h>
-#include <driver/rtc_io.h> //needed for using the ESP-PICO-D4 IO pins
 #include <math.h>
 
 const double radToDeg = 180.0 / M_PI;
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleMsg(const tN2kMsg &N2kMsg)
 {
   switch (N2kMsg.PGN)
   {
@@ -58,7 +57,7 @@ void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::Update()
+void N2kToN183::Update()
 {
   SendRMC();
   if (LastHeadingTime + 2000 < millis())
@@ -81,7 +80,7 @@ void tN2kDataToNMEA0183::Update()
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::SendMessage(const tNMEA0183Msg &NMEA0183Msg)
+void N2kToN183::SendMessage(const tNMEA0183Msg &NMEA0183Msg)
 {
   if (_handler_func) {
     char buf[MAX_NMEA0183_MESSAGE_SIZE];
@@ -92,7 +91,7 @@ void tN2kDataToNMEA0183::SendMessage(const tNMEA0183Msg &NMEA0183Msg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleSystemTime(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleSystemTime(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kTimeSource TimeSource;
@@ -106,7 +105,7 @@ void tN2kDataToNMEA0183::HandleSystemTime(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleRateOfTurn(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleRateOfTurn(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   double RateOfTurn;
@@ -123,7 +122,7 @@ void tN2kDataToNMEA0183::HandleRateOfTurn(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleHeading(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleHeading(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kHeadingReference ref;
@@ -149,7 +148,7 @@ void tN2kDataToNMEA0183::HandleHeading(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleVariation(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleVariation(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kMagneticVariation Source;
@@ -158,7 +157,7 @@ void tN2kDataToNMEA0183::HandleVariation(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleBoatSpeed(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleBoatSpeed(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   double WaterReferenced;
@@ -177,7 +176,7 @@ void tN2kDataToNMEA0183::HandleBoatSpeed(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleDepth(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleDepth(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   double DepthBelowTransducer;
@@ -199,7 +198,7 @@ void tN2kDataToNMEA0183::HandleDepth(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandlePosition(const tN2kMsg &N2kMsg)
+void N2kToN183::HandlePosition(const tN2kMsg &N2kMsg)
 {
 
   if (ParseN2kPGN129025(N2kMsg, Latitude, Longitude))
@@ -214,7 +213,7 @@ void tN2kDataToNMEA0183::HandlePosition(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleCOGSOG(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleCOGSOG(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kHeadingReference HeadingReference;
@@ -238,7 +237,7 @@ void tN2kDataToNMEA0183::HandleCOGSOG(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleGNSS(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleGNSS(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kGNSStype GNSStype;
@@ -266,7 +265,7 @@ void tN2kDataToNMEA0183::HandleGNSS(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::HandleWind(const tN2kMsg &N2kMsg)
+void N2kToN183::HandleWind(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kWindReference WindReference;
@@ -287,7 +286,7 @@ void tN2kDataToNMEA0183::HandleWind(const tN2kMsg &N2kMsg)
 }
 
 //*****************************************************************************
-void tN2kDataToNMEA0183::SendRMC()
+void N2kToN183::SendRMC()
 {
   if (NextRMCSend <= millis() && !N2kIsNA(Latitude))
   {
