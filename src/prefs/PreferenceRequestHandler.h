@@ -35,6 +35,7 @@ public:
                 _prefs->setNmeaToUDP(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_UDP)));
                 _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
                 _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
+                _prefs->setBlGPSEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_BL_GPS_ENABLED)));
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
                 _prefs->setBlEnabled(String("on").equals(server.arg(_prefs->PREF_BLUETOOTH_ENABLED)));
@@ -187,6 +188,7 @@ protected:
             content.replace(getVar(_prefs->PREF_NMEA_TO_BL), _prefs->isNmeaToBluetooth() ? "checked" : "");
             content.replace(getVar(_prefs->PREF_NMEA_TO_UDP), _prefs->isNmeaToUDP() ? "checked" : "");
             content.replace(getVar(_prefs->PREF_NMEA2000_TO_SERIAL), _prefs->isNmea2000ToSerial() ? "checked" : "");
+            content.replace(getVar(_prefs->PREF_NMEA_BL_GPS_ENABLED), _prefs->isBlGPSEnabled() ? "checked" : "");
             //TODO: Factor out the duplication into a function
             content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_ListenAndSend), _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend ? "selected" : "");
             content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_ListenAndNode), _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode ? "selected" : "");

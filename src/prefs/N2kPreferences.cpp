@@ -171,3 +171,11 @@ tNMEA2000::tN2kMode N2KPreferences::getNmeaMode() {
     return nmea2000Mode;
 }
 
+void N2KPreferences::setBlGPSEnabled(bool value) {
+    prefs.putBool(PREF_NMEA_BL_GPS_ENABLED, value);
+    nmeaBlGps = value;
+}
+
+bool N2KPreferences::isBlGPSEnabled() {
+    return nmeaBlGps;
+}

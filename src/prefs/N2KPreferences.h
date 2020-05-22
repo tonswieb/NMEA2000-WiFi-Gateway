@@ -21,6 +21,7 @@ private:
   bool nmeaToWebSocket;
   bool nmeaToBluetooth;
   bool nmeaToUdp;
+  bool nmeaBlGps;
 
   //NMEA200 preferences
   bool nmea2000ToSerial;
@@ -63,6 +64,7 @@ public:
   const char *PREF_NMEA_TO_UDP = "nmeaToUDP";
   const char *PREF_NMEA2000_TO_SERIAL = "n2kToSerial";
   const char *PREF_NMEA2000_MODE = "nmea2000Mode";
+  const char *PREF_NMEA_BL_GPS_ENABLED = "nmeaBlGps";
 
   N2KPreferences();
   ~N2KPreferences();
@@ -114,6 +116,8 @@ public:
   bool isNmeaToBluetooth();
   void setNmeaToUDP(bool value);
   bool isNmeaToUDP();
+  void setBlGPSEnabled(bool value);
+  bool isBlGPSEnabled();
 
   //NMEA2000 Preferences
   void setNmea2000ToSerial(bool value);
