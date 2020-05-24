@@ -27,6 +27,7 @@ public:
             Serial.println("Handling Form POST: " + requestUri);
             if (requestUri.equals("/demoSettings")) {
                 _prefs->setDemoEnabled(String("on").equals(server.arg(_prefs->PREF_DEMO_ENABLED)));
+                _prefs->executeCallbacks();
                 server.send(204);
             } else if (requestUri.equals("/nmeaSettings")) {
                 _prefs->setNmeaToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_SERIAL)));
@@ -36,9 +37,11 @@ public:
                 _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
                 _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
                 _prefs->setBlGPSEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_BL_GPS_ENABLED)));
+                _prefs->executeCallbacks();
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
                 _prefs->setBlEnabled(String("on").equals(server.arg(_prefs->PREF_BLUETOOTH_ENABLED)));
+                _prefs->executeCallbacks();
                 server.send(204);
             } else if (requestUri.equals("/wifiSettings")) {
                 //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
@@ -52,6 +55,7 @@ public:
                     _prefs->setApSSID(server.arg(_prefs->PREF_WIFI_AP_SSID));
                     _prefs->setApPassword(server.arg(_prefs->PREF_WIFI_AP_PASSWORD));
                 }
+                _prefs->executeCallbacks();
                 server.send(204);
             } else {
                 Serial.println("Received unknown form POST: " + requestUri);

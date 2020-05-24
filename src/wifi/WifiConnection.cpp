@@ -98,9 +98,11 @@ void WifiConnection::setup_OTA()
 
 void WifiConnection::sendUdpPackage(char *buf)
 {
-    udp.beginPacket(ipLok, prefs->getUdpBroadcastPort());
-    udp.println(buf);
-    udp.endPacket();
+    if (prefs->isNmeaToUDP()) {
+        udp.beginPacket(ipLok, prefs->getUdpBroadcastPort());
+        udp.println(buf);
+        udp.endPacket();
+    }
 }
 
 Stream* WifiConnection::getUdpPackageStream() {

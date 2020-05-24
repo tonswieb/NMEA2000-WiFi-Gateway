@@ -7,6 +7,16 @@ N2KPreferences::~N2KPreferences() {
     end();
 }
 
+void N2KPreferences::registerCallback(std::function<void ()> callback) {
+    this->callback = callback;
+}
+
+void N2KPreferences::executeCallbacks() {
+    if (callback) {
+        callback();
+    }
+}
+
 void N2KPreferences::begin() {
 
     prefs.begin(PREF_SPACE);

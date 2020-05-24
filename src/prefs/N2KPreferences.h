@@ -5,6 +5,7 @@
 #include <nvs.h>
 #include <nvs_flash.h>
 #include <NMEA2000.h>
+#include <functional>
 
 class N2KPreferences {
 
@@ -41,6 +42,9 @@ private:
   String apSSID;
   String apPassword;
 
+  //TODO Ugrade to array so we can have more then one callback
+  std::function<void ()> callback;
+
   /**
    * Initialize fields from preferences namespace or initialize with default 
    * value if field is not (yet) stored in preference namespace.
@@ -69,8 +73,11 @@ public:
   N2KPreferences();
   ~N2KPreferences();
 
+  void registerCallback(std::function<void ()> callback);
   void begin();
   void freeEntries();
+  //TODO: Perhaps make this an private function which is called from setters.
+  void executeCallbacks();
   void end();
   /**
    * Reset all preferences set through this class and reboot the ESP.

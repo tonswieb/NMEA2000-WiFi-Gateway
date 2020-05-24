@@ -4,7 +4,6 @@
 #define ESP32_NMEA4800_TX 12 //Free pin. We don't need to use, but need to map something.
 
 #include <SPIFFS.h>
-#include <BluetoothSerial.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
 
@@ -16,13 +15,14 @@
 #include "prefs/N2KPreferences.h"
 #include "prefs/PreferenceRequestHandler.h"
 #include "wifi/WifiConnection.h"
+#include "wifi/BluetoothGps.h"
 #include "util/Hardware.h"
 
 N2KPreferences prefs;
 WifiConnection connection(&prefs);
 WebServer webserver(80);
 WebSocketsServer webSocket = WebSocketsServer(8080);
-BluetoothSerial SerialBT;
+BluetoothGps bluetooth(&prefs);
 Hardware hardware;
 Logger* logger;
 
@@ -32,12 +32,10 @@ N183ToN2k * pUdpToN2k;
 N2kToN183 * pN2kToN183;
 
 std::function<void(char *)> messageCallback = [](char *message) {
-  if (prefs.isNmeaToUDP()) {
-    connection.sendUdpPackage(message);
-  }
-  if (prefs.isNmeaToBluetooth()) {
-    SerialBT.println(message);
-  }
+
+  connection.sendUdpPackage(message);
+  bluetooth.sendUdpPackage(message);
+
   if (prefs.isNmeaToSocket()) {
     webSocket.broadcastTXT("N:" + String(message));
   }
@@ -60,11 +58,7 @@ void setup()
   Serial.begin(115200);
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
-  if (prefs.isBlEnabled())
-  {
-    Serial.println("Initializing bluetooth.");
-    SerialBT.begin("N2K-bridge");
-  }
+  bluetooth.begin();
 
   logger = new Logger(&Serial,DEBUG_LEVEL_TRACE);
   pSerial1ToN2k = new StreamToN183(&Serial1, messageCallback);
@@ -87,6 +81,7 @@ void loop()
   pSerial2ToN2k->handleLoop();
   pUdpToN2k->handleLoop();
   connection.loop();
+  bluetooth.loop();
 
   if (prefs.isDemoEnabled()) {
     SendN2KMessages(pN2kToN183);
