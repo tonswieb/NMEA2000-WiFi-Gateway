@@ -38,7 +38,7 @@ void BluetoothGps::end() {
 void BluetoothGps::loop() {
     if (blGpsEnabled) {
         while(SerialBT.available()) {
-            //TODO: Send it to different sources!
+            //TODO: Send it to consumers, instead of just reading it.
             SerialBT.read();
         }
     }
@@ -47,7 +47,7 @@ void BluetoothGps::loop() {
 void BluetoothGps::sendUdpPackage(char *buf)
 {
   if (blEnabled && prefs->isNmeaToBluetooth()) {
-    // SerialBT.println(buf);
+    SerialBT.println(buf);
   }
 }
 
