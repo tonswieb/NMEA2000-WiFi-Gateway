@@ -15,7 +15,7 @@ void N2KPreferences::begin() {
 
 void N2KPreferences::freeEntries() {
 
-    Serial.println("[PREF] Free Entries: " + prefs.freeEntries());
+    Serial.print("[PREF] Free Entries: "); Serial.println(prefs.freeEntries());
 }
 
 
@@ -28,6 +28,7 @@ void N2KPreferences::init() {
     //Retrieve settings, use default if missing and store
     //directly to ensure that everything fits in NVS.
     setBlEnabled(prefs.getBool(PREF_BLUETOOTH_ENABLED,false));
+    setBlGPSEnabled(prefs.getBool(PREF_NMEA_BL_GPS_ENABLED,false));
     setDemoEnabled(prefs.getBool(PREF_DEMO_ENABLED, false));
     setUdpBroadcastPort(prefs.getUInt(PREF_WIFI_UDP_PORT, 9876));
     setStationEnabled(prefs.getBool(PREF_WIFI_STA_ENABLED, false));
