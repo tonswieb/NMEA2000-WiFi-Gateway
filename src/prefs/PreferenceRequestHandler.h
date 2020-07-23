@@ -5,6 +5,7 @@
 #include <SPIFFS.h>
 #include <detail/RequestHandler.h>
 #include <HTTP_Method.h>
+#include <ArduinoJson.h>
 #include "N2KPreferences.h"
 #define FILESYSTEM SPIFFS
 
@@ -62,7 +63,32 @@ public:
                 server.send(404, "text/plain", "FileNotFound");          
             }
         } else {
-            if (requestUri.equals("/reboot")) {
+            if (requestUri.equals("/load")) {
+                StaticJsonDocument<500> doc;
+                doc[_prefs->PREF_BLUETOOTH_ENABLED] =  _prefs->isBlEnabled();
+                doc[_prefs->PREF_DEMO_ENABLED] =  _prefs->isDemoEnabled();
+                doc[_prefs->PREF_WIFI_STA_ENABLED] =  _prefs->getStationEnabled();
+                doc[_prefs->PREF_WIFI_UDP_PORT] =  String(_prefs->getUdpBroadcastPort());
+                doc[_prefs->PREF_WIFI_STA_HOSTNAME] =  _prefs->getStationHostname();
+                doc[_prefs->PREF_WIFI_STA_SSID] =  _prefs->getStationSSID();
+                doc[_prefs->PREF_WIFI_STA_PASSWORD] =  _prefs->getStationPassword();
+                doc[_prefs->PREF_WIFI_AP_SSID] =  _prefs->getApSSID();
+                doc[_prefs->PREF_WIFI_AP_PASSWORD] =  _prefs->getApPassword();
+                doc[_prefs->PREF_NMEA_TO_SERIAL] =  _prefs->isNmeaToSerial();
+                doc[_prefs->PREF_NMEA_TO_SOCKET] =  _prefs->isNmeaToSocket();
+                doc[_prefs->PREF_NMEA_TO_BL] =  _prefs->isNmeaToBluetooth();
+                doc[_prefs->PREF_NMEA_TO_UDP] =  _prefs->isNmeaToUDP();
+                doc[_prefs->PREF_NMEA2000_TO_SERIAL] =  _prefs->isNmea2000ToSerial();
+                doc[_prefs->PREF_NMEA_BL_GPS_ENABLED] =  _prefs->isBlGPSEnabled();
+                doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndSend] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
+                doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndNode] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;
+                doc["nmea2000Mode" + tNMEA2000::N2km_ListenOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly;
+                doc["nmea2000Mode" + tNMEA2000::N2km_NodeOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_NodeOnly;
+                doc["nmea2000Mode" + tNMEA2000::N2km_SendOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_SendOnly;
+                char buffer[500];
+                serializeJson(doc, buffer);
+                server.send(200,"application/json",buffer);
+            } else if (requestUri.equals("/reboot")) {
                 server.send(200);
                 ESP.restart();
             } else if (requestUri.equals("/reset")) {
@@ -160,6 +186,7 @@ protected:
             path += "index.html";
         }
 
+        String contentType = getContentType(server, path);
         String pathWithGz = path + ".gz";
         if (exists(pathWithGz) || exists(path))
         {
@@ -167,43 +194,16 @@ protected:
             {
                 path += ".gz";
             }
-            sendFileContent(server, path);
+            sendFileContent(server, path, contentType);
             return true;
         }
         return false;
     }
 
-    void sendFileContent(WebServer &server, String path)
+    void sendFileContent(WebServer &server, String path, String contentType)
     {
         File file = FILESYSTEM.open(path, "r");
-        if (path.endsWith("html")) {
-            String content = file.readString();
-            content.replace(getVar(_prefs->PREF_BLUETOOTH_ENABLED), _prefs->isBlEnabled() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_DEMO_ENABLED), _prefs->isDemoEnabled() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_WIFI_STA_ENABLED), _prefs->getStationEnabled() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_WIFI_UDP_PORT), String(_prefs->getUdpBroadcastPort()));
-            content.replace(getVar(_prefs->PREF_WIFI_STA_HOSTNAME), _prefs->getStationHostname());
-            content.replace(getVar(_prefs->PREF_WIFI_STA_SSID), _prefs->getStationSSID());
-            content.replace(getVar(_prefs->PREF_WIFI_STA_PASSWORD), _prefs->getStationPassword());
-            content.replace(getVar(_prefs->PREF_WIFI_AP_SSID), _prefs->getApSSID());
-            content.replace(getVar(_prefs->PREF_WIFI_AP_PASSWORD), _prefs->getApPassword());
-            content.replace(getVar(_prefs->PREF_NMEA_TO_SERIAL), _prefs->isNmeaToSerial() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_NMEA_TO_SOCKET), _prefs->isNmeaToSocket() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_NMEA_TO_BL), _prefs->isNmeaToBluetooth() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_NMEA_TO_UDP), _prefs->isNmeaToUDP() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_NMEA2000_TO_SERIAL), _prefs->isNmea2000ToSerial() ? "checked" : "");
-            content.replace(getVar(_prefs->PREF_NMEA_BL_GPS_ENABLED), _prefs->isBlGPSEnabled() ? "checked" : "");
-            //TODO: Factor out the duplication into a function
-            content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_ListenAndSend), _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend ? "selected" : "");
-            content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_ListenAndNode), _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode ? "selected" : "");
-            content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_ListenOnly), _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly ? "selected" : "");
-            content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_NodeOnly), _prefs->getNmeaMode() == tNMEA2000::N2km_NodeOnly ? "selected" : "");
-            content.replace(getVar("nmea2000Mode" + tNMEA2000::N2km_SendOnly), _prefs->getNmeaMode() == tNMEA2000::N2km_SendOnly ? "selected" : "");
-            server.send(200, "text/html", content);
-        } else {
-            String contentType = getContentType(server, path);
-            server.streamFile(file, contentType);
-        }
+        server.streamFile(file, contentType);
         file.close();
     }
 

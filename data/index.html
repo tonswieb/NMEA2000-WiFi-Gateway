@@ -98,7 +98,7 @@
     <title>NMEA Bridge</title>
 </head>
 
-<body>
+<body onload="javascript:load()">
     <div class="tab">
         <button id='tabGeneral' class="tablinks" onclick="showTab(event, 'General')">General</button>
         <button class="tablinks" onclick="showTab(event, 'NMEAStream')">NMEA Stream</button>
@@ -117,7 +117,7 @@
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="demoSettingsForm" name="demoSettingsForm" value="dummy" />
             <label for="demoEnabled">Demo data Enabled</label>
-            <input type="checkbox" id="demoEnabled" name="demoEnabled" $demoEnabled /><br>
+            <input type="checkbox" id="demoEnabled" name="demoEnabled"/><br>
             <input type="button" value="Save Demo Settings" onclick="submitForm(this.form.name)"/>
         </form>
     </div>
@@ -127,25 +127,25 @@
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
             <label for="nmeaToSerial">Console</label>
-            <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial" $nmeaToSerial /><br>
+            <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial"/><br>
             <label for="nmeaToSocket">Browser</label>
-            <input type="checkbox" id="nmeaToSocket" name="nmeaToSocket" $nmeaToSocket /><br>
+            <input type="checkbox" id="nmeaToSocket" name="nmeaToSocket"/><br>
             <label for="nmeaToBl">Bluetooth</label>
-            <input type="checkbox" id="nmeaToBl" name="nmeaToBl" $nmeaToBl /><br>
+            <input type="checkbox" id="nmeaToBl" name="nmeaToBl"/><br>
             <label for="nmeaToUDP">WIFI UDP</label>
-            <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP" $nmeaToUDP /><br>
+            <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP"/><br>
             <label for="nmeaBlGps">Bluetooth GPS</label>
-            <input type="checkbox" id="nmeaBlGps" name="nmeaBlGps" $nmeaBlGps /><br>
+            <input type="checkbox" id="nmeaBlGps" name="nmeaBlGps"/><br>
             <h2>NMEA 2000 Configuration:</h2>
             <label for="nmea2000ToSerial">Log NMEA 2000 to Console</label>
-            <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial" $nmea2000ToSerial /><br>
+            <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial"/><br>
             <label for="nmea2000Mode">Mode</label>
             <select id="nmea2000Mode" name="nmea2000Mode">
-                <option value="0" $nmea2000Mode0>Receive</option>
-                <option value="1" $nmea2000Mode1>Send</option>
-                <option value="2" $nmea2000Mode2>Receive and Send</option>
-                <option value="3" $nmea2000Mode3>Send (stealth)</option>
-                <option value="4" $nmea2000Mode4>Receive and Send (stealth)</option>
+                <option value="0">Receive</option>
+                <option value="1">Send</option>
+                <option value="2">Receive and Send</option>
+                <option value="3">Send (stealth)</option>
+                <option value="4">Receive and Send (stealth)</option>
               </select>             
             <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
         </form>
@@ -158,7 +158,7 @@
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="bluetoothSettingsForm" name="bluetoothSettingsForm" value="dummy" />
             <label for="blEnabled">Bluetooth Enabled</label>
-            <input type="checkbox" id="blEnabled" name="blEnabled" $blEnabled /><br>
+            <input type="checkbox" id="blEnabled" name="blEnabled"/><br>
             <input type="button" value="Save Bluetooth Settings" onclick="submitForm(this.form.name)"/>
         </form>
     </div>
@@ -168,29 +168,29 @@
         <form name="wifiSettings">
             <h2>General WIFI settings</h2>
             <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
-            <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535" value="$wifiUdpPort"><br>
+            <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535"><br>
 
             <label for="wifiStaEnabled">Use WIFI Station</label>
             <input type="checkbox" id="wifiStaEnabled" onchange="toggleWifiStationOrAPVisibility(this.checked)"
-                name="wifiStaEnabled" $wifiStaEnabled /><br>
+                name="wifiStaEnabled"/><br>
             <h2>WIFI Station</h2>
             <fieldset name="wifiStation" disabled>
                 <label for="wifiStaHostname">Hostname</label>
-                <input type="text" id="wifiStaHostname" name="wifiStaHostname" value="$wifiStaHostname" /><br>
+                <input type="text" id="wifiStaHostname" name="wifiStaHostname"/><br>
 
                 <label for="wifiStaSsid">SSID</label>
-                <input type="text" id="wifiStaSsid" name="wifiStaSsid" value="$wifiStaSsid" /><br>
+                <input type="text" id="wifiStaSsid" name="wifiStaSsid"/><br>
 
                 <label for="wifiStaPassw">Password</label>
-                <input type="password" id="wifiStaPassw" name="wifiStaPassw" value="$wifiStaPassw" /><br>
+                <input type="password" id="wifiStaPassw" name="wifiStaPassw"/><br>
             </fieldset>
             <h2>WIFI Access Point</h2>
             <fieldset name="wifiAP">
                 <label for="wifiApSsid">SSID</label>
-                <input type="text" id="wifiApSsid" name="wifiApSsid" value="$wifiApSsid" /><br>
+                <input type="text" id="wifiApSsid" name="wifiApSsid"/><br>
 
                 <label for="wifiApPassword">Password</label>
-                <input type="password" id="wifiApPassword" name="wifiApPassword" value="$wifiApPassword" /><br>
+                <input type="password" id="wifiApPassword" name="wifiApPassword"/><br>
             </fieldset>
             <input type="button" value="Save WIFI settings" onclick="submitForm(this.form.name)"/>
         </form>
@@ -205,6 +205,37 @@
         //Show General tab by default.
         document.getElementById("tabGeneral").click();
         toggleWifiStationOrAPVisibility(document.getElementById("wifiStaEnabled").checked);
+
+        function load() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "load", true);
+            xhttp.onload  = function() {
+                var jsonResponse = JSON.parse(xhttp.responseText);
+                document.getElementsByName("demoEnabled")[0].checked = jsonResponse["demoEnabled"];
+                document.getElementsByName("nmeaToSerial")[0].checked = jsonResponse["nmeaToSerial"];
+                document.getElementsByName("nmeaToSocket")[0].checked = jsonResponse["nmeaToSocket"];
+                document.getElementsByName("nmeaToBl")[0].checked = jsonResponse["nmeaToBl"];
+                document.getElementsByName("nmeaToUDP")[0].checked = jsonResponse["nmeaToUDP"];
+                document.getElementsByName("nmeaBlGps")[0].checked = jsonResponse["nmeaBlGps"];
+                document.getElementsByName("nmea2000ToSerial")[0].checked = jsonResponse["nmea2000ToSerial"];
+                document.getElementById("nmea2000Mode").getElementsByTagName("option")[0].selected = jsonResponse["nmea2000Mode0"] ? 'selected' : '';
+                document.getElementById("nmea2000Mode").getElementsByTagName("option")[1].selected = jsonResponse["nmea2000Mode1"] ? 'selected' : '';
+                document.getElementById("nmea2000Mode").getElementsByTagName("option")[2].selected = jsonResponse["nmea2000Mode2"] ? 'selected' : '';
+                document.getElementById("nmea2000Mode").getElementsByTagName("option")[3].selected = jsonResponse["nmea2000Mode3"] ? 'selected' : '';
+                document.getElementById("nmea2000Mode").getElementsByTagName("option")[4].selected = jsonResponse["nmea2000Mode4"] ? 'selected' : '';
+                document.getElementsByName("blEnabled")[0].checked = jsonResponse["blEnabled"];
+                document.getElementsByName("wifiUdpPort")[0].value = jsonResponse["wifiUdpPort"];
+                document.getElementsByName("wifiStaEnabled")[0].checked = jsonResponse["wifiStaEnabled"];
+                document.getElementsByName("wifiStaHostname")[0].value = jsonResponse["wifiStaHostname"];
+                document.getElementsByName("wifiStaSsid")[0].value = jsonResponse["wifiStaSsid"];
+                document.getElementsByName("wifiStaPassw")[0].value = jsonResponse["wifiStaPassw"];
+                document.getElementsByName("wifiApSsid")[0].value = jsonResponse["wifiApSsid"];
+                document.getElementsByName("wifiApPassword")[0].value = jsonResponse["wifiStaHostname"];
+            };
+            xhttp.send();
+
+        }
 
         function showTab(evt, tabName) {
             // Declare all variables
