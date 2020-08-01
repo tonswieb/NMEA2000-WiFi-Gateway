@@ -4,24 +4,22 @@
 #include <BluetoothSerial.h>
 #include <prefs/N2KPreferences.h>
 
-class BluetoothGps {
+class Bluetooth {
 
 private:
   //Internal toggles to check against changed preferences.
   bool blEnabled;
   bool blGpsEnabled;
-  BluetoothSerial SerialBT;
+  BluetoothSerial *SerialBT;
   N2KPreferences *prefs;
 
   void connectBlGps();
   void disconnectBlGps();
 
 public:
-  // BluetoothGps(BluetoothSerial *bluetoothSerial, N2KPreferences *prefs);
-  BluetoothGps(N2KPreferences *prefs);
+  Bluetooth(BluetoothSerial *bluetoothSerial, N2KPreferences *prefs);
   void begin();
   void end();
-  void loop();
   void sendUdpPackage(char *message);
 };
 
