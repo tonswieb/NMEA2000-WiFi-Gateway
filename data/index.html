@@ -123,19 +123,26 @@
     </div>
     <div id="NMEAStream" class="tabcontent">
         <form name="nmeaSettings">
-            <h2>Send NMEA to</h2>
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
+            <h2>NMEA 0183 sources in use:</h2>
+            <label for="nmeaBlGps">Bluetooth GPS</label>
+            <input type="checkbox" id="nmeaBlGps" name="nmeaBlGps"/><br>
+            <label for="nmeaN2k">N2K bus</label>
+            <input type="checkbox" id="nmeaN2k" name="nmeaN2k"/><br>
+            <label for="nmeaSerial1">Serial 1 - 38400 bps (AIS)</label>
+            <input type="checkbox" id="nmeaSerial1" name="nmeaSerial1"/><br>
+            <label for="nmeaSerial2">Serial 2 - 4800 bps</label>
+            <input type="checkbox" id="nmeaSerial2" name="nmeaSerial2"/><br>
+            <h2>Send NMEA 0183 messages to:</h2>
             <label for="nmeaToSerial">Console</label>
             <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial"/><br>
             <label for="nmeaToSocket">Browser</label>
             <input type="checkbox" id="nmeaToSocket" name="nmeaToSocket"/><br>
-            <label for="nmeaToBl">Bluetooth</label>
+            <label for="nmeaToBl">Bluetooth clients</label>
             <input type="checkbox" id="nmeaToBl" name="nmeaToBl"/><br>
-            <label for="nmeaToUDP">WIFI UDP</label>
+            <label for="nmeaToUDP">WIFI clients (via UDP)</label>
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP"/><br>
-            <label for="nmeaBlGps">Bluetooth GPS</label>
-            <input type="checkbox" id="nmeaBlGps" name="nmeaBlGps"/><br>
             <h2>NMEA 2000 Configuration:</h2>
             <label for="nmea2000ToSerial">Log NMEA 2000 to Console</label>
             <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial"/><br>
@@ -153,7 +160,7 @@
     </div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
-        <p>Configure bluetooth. Requires a reset.</p>
+        <p>Configure bluetooth.</p>
         <form name="bluetoothSettings">
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="bluetoothSettingsForm" name="bluetoothSettingsForm" value="dummy" />
@@ -211,30 +218,39 @@
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "load", true);
             xhttp.onload  = function() {
-                var jsonResponse = JSON.parse(xhttp.responseText);
-                document.getElementsByName("demoEnabled")[0].checked = jsonResponse["demoEnabled"];
-                document.getElementsByName("nmeaToSerial")[0].checked = jsonResponse["nmeaToSerial"];
-                document.getElementsByName("nmeaToSocket")[0].checked = jsonResponse["nmeaToSocket"];
-                document.getElementsByName("nmeaToBl")[0].checked = jsonResponse["nmeaToBl"];
-                document.getElementsByName("nmeaToUDP")[0].checked = jsonResponse["nmeaToUDP"];
-                document.getElementsByName("nmeaBlGps")[0].checked = jsonResponse["nmeaBlGps"];
-                document.getElementsByName("nmea2000ToSerial")[0].checked = jsonResponse["nmea2000ToSerial"];
-                document.getElementById("nmea2000Mode").getElementsByTagName("option")[0].selected = jsonResponse["nmea2000Mode0"] ? 'selected' : '';
-                document.getElementById("nmea2000Mode").getElementsByTagName("option")[1].selected = jsonResponse["nmea2000Mode1"] ? 'selected' : '';
-                document.getElementById("nmea2000Mode").getElementsByTagName("option")[2].selected = jsonResponse["nmea2000Mode2"] ? 'selected' : '';
-                document.getElementById("nmea2000Mode").getElementsByTagName("option")[3].selected = jsonResponse["nmea2000Mode3"] ? 'selected' : '';
-                document.getElementById("nmea2000Mode").getElementsByTagName("option")[4].selected = jsonResponse["nmea2000Mode4"] ? 'selected' : '';
-                document.getElementsByName("blEnabled")[0].checked = jsonResponse["blEnabled"];
-                document.getElementsByName("wifiUdpPort")[0].value = jsonResponse["wifiUdpPort"];
-                document.getElementsByName("wifiStaEnabled")[0].checked = jsonResponse["wifiStaEnabled"];
-                document.getElementsByName("wifiStaHostname")[0].value = jsonResponse["wifiStaHostname"];
-                document.getElementsByName("wifiStaSsid")[0].value = jsonResponse["wifiStaSsid"];
-                document.getElementsByName("wifiStaPassw")[0].value = jsonResponse["wifiStaPassw"];
-                document.getElementsByName("wifiApSsid")[0].value = jsonResponse["wifiApSsid"];
-                document.getElementsByName("wifiApPassword")[0].value = jsonResponse["wifiStaHostname"];
+                var json = JSON.parse(xhttp.responseText);
+                setBoolean(json,"demoEnabled");
+                setBoolean(json,"nmeaToSerial");
+                setBoolean(json,"nmeaToSocket");
+                setBoolean(json,"nmeaToBl");
+                setBoolean(json,"nmeaToUDP");
+                setBoolean(json,"nmeaBlGps");
+                setBoolean(json,"nmea2000ToSerial");
+                setListValue(json,"nmea2000Mode0","nmea2000Mode",0);
+                setListValue(json,"nmea2000Mode0","nmea2000Mode",1);
+                setListValue(json,"nmea2000Mode0","nmea2000Mode",2);
+                setListValue(json,"nmea2000Mode0","nmea2000Mode",3);
+                setListValue(json,"nmea2000Mode0","nmea2000Mode",4);
+                setBoolean(json,"blEnabled");
+                setValue(json,"wifiUdpPort");
+                setBoolean(json,"wifiStaEnabled");
+                setValue(json,"wifiStaHostname");
+                setValue(json,"wifiStaSsid");
+                setValue(json,"wifiStaPassw");
+                setValue(json,"wifiApSsid");
+                setValue(json,"wifiApPassword");
             };
             xhttp.send();
+        }
 
+        function setBoolean(json, name) {
+            document.getElementsByName(name)[0].checked = json[name];
+        }
+        function setValue(json, name) {
+            document.getElementsByName(name)[0].value = json[name];
+        }
+        function setListValue(json, jsonField, list, index) {
+            document.getElementById(list).getElementsByTagName("option")[index].selected = json[jsonField] ? 'selected' : '';
         }
 
         function showTab(evt, tabName) {
