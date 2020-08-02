@@ -126,14 +126,14 @@
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
             <h2>NMEA 0183 sources in use:</h2>
-            <label for="nmeaBlGps">Bluetooth GPS</label>
-            <input type="checkbox" id="nmeaBlGps" name="nmeaBlGps"/><br>
-            <label for="nmeaN2k">N2K bus</label>
-            <input type="checkbox" id="nmeaN2k" name="nmeaN2k"/><br>
-            <label for="nmeaSerial1">Serial 1 - 38400 bps (AIS)</label>
-            <input type="checkbox" id="nmeaSerial1" name="nmeaSerial1"/><br>
-            <label for="nmeaSerial2">Serial 2 - 4800 bps</label>
-            <input type="checkbox" id="nmeaSerial2" name="nmeaSerial2"/><br>
+            <label for="nmeaSrcBlGps">Bluetooth GPS</label>
+            <input type="checkbox" id="nmeaSrcBlGps" name="nmeaSrcBlGps"/><br>
+            <label for="nmeaSrcN2k">N2K bus</label>
+            <input type="checkbox" id="nmeaSrcN2k" name="nmeaSrcN2k"/><br>
+            <label for="nmeaSrcSerial1">Serial 1 - 38400 bps (AIS)</label>
+            <input type="checkbox" id="nmeaSrcSerial1" name="nmeaSrcSerial1"/><br>
+            <label for="nmeaSrcSerial2">Serial 2 - 4800 bps</label>
+            <input type="checkbox" id="nmeaSrcSerial2" name="nmeaSrcSerial2"/><br>
             <h2>Send NMEA 0183 messages to:</h2>
             <label for="nmeaToSerial">Console</label>
             <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial"/><br>
@@ -224,7 +224,10 @@
                 setBoolean(json,"nmeaToSocket");
                 setBoolean(json,"nmeaToBl");
                 setBoolean(json,"nmeaToUDP");
-                setBoolean(json,"nmeaBlGps");
+                setBoolean(json,"nmeaSrcBlGps");
+                setBoolean(json,"nmeaSrcN2k");
+                setBoolean(json,"nmeaSrcSerial1");
+                setBoolean(json,"nmeaSrcSerial2");
                 setBoolean(json,"nmea2000ToSerial");
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",0);
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",1);

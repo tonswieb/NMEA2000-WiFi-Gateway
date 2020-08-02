@@ -343,6 +343,9 @@ boolean isMessageCode_P(const tNMEA0183Msg &NMEA0183Msg, const char* code) {
   return NMEA0183Msg.IsMessageCode(buffer);
 }
 
+/**
+ * iSailor can send APB, BOD, BWC, BWR, HSC, RMB, RMC, XTE
+ */
 void N183ToN2k::HandleNMEA0183Msg(const tNMEA0183Msg &NMEA0183Msg) {
 
   debug("Handling NMEA0183 message %s",NMEA0183Msg.MessageCode());

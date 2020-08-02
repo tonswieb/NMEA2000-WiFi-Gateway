@@ -31,6 +31,10 @@ const double radToDeg = 180.0 / M_PI;
 //*****************************************************************************
 void N2kToN183::HandleMsg(const tN2kMsg &N2kMsg)
 {
+  if (!prefs->isNmeaSrcN2KEnabled()) {
+    return;
+  }
+
   switch (N2kMsg.PGN)
   {
   case 126992UL:
@@ -59,6 +63,9 @@ void N2kToN183::HandleMsg(const tN2kMsg &N2kMsg)
 //*****************************************************************************
 void N2kToN183::Update()
 {
+  if (!prefs->isNmeaSrcN2KEnabled()) {
+    return;
+  }
   SendRMC();
   if (LastHeadingTime + 2000 < millis())
     Heading = N2kDoubleNA;

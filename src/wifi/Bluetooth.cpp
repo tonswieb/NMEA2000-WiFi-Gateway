@@ -36,9 +36,10 @@ void btCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     }
 }
 
-Bluetooth::Bluetooth(BluetoothSerial *bluetoothSerial,N2KPreferences *prefs)
+Bluetooth::Bluetooth(BluetoothSerial *bluetoothSerial,N2KPreferences *prefs, Stream* logger)
 {
     this->SerialBT = bluetoothSerial;
+    this->logger = logger;
     this->prefs = prefs;
     prefs->registerCallback([&]() {
         begin();
@@ -52,7 +53,7 @@ void Bluetooth::begin() {
 
   if (prefs->isBlEnabled() && !blEnabled) {
     blEnabled = true;
-    Serial.println("Initializing bluetooth.");
+    logger->println("Initializing bluetooth.");
     SerialBT->begin("N2K-bridge", true);
   }
   connectBlGps();
@@ -61,7 +62,7 @@ void Bluetooth::begin() {
 void Bluetooth::end() {
     disconnectBlGps();
     if (!prefs->isBlEnabled() && blEnabled) {
-        Serial.println("Disable Bluetooth");
+        logger->println("Disable Bluetooth");
         blEnabled = false;
         SerialBT->end();
     }
@@ -76,7 +77,7 @@ void Bluetooth::sendUdpPackage(char *buf)
 
 void Bluetooth::connectBlGps() {
 
-    if (!blGpsEnabled && prefs->isBlGPSEnabled()) {
+    if (!blGpsEnabled && prefs->isNmeaSrcBlGPSEnabled()) {
         blGpsEnabled = true;
         SerialBT->register_callback(&btCallback);
         SerialBT->connect("XGPS160-3F6E60");
@@ -84,7 +85,7 @@ void Bluetooth::connectBlGps() {
 }
 
 void Bluetooth::disconnectBlGps() {
-    if (blGpsEnabled && !prefs->isBlGPSEnabled()) {
+    if (blGpsEnabled && !prefs->isNmeaSrcBlGPSEnabled()) {
         blGpsEnabled = false;
         SerialBT->disconnect();
     }

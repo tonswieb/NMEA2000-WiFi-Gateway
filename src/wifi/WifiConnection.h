@@ -16,12 +16,13 @@ private:
   IPAddress ipLok;
   WiFiUDP udp;
   UdpStream udpStream = UdpStream(&udp);
+  Stream *logger;
 
   void setupWIFI();
   void setup_OTA();
 
 public:
-  WifiConnection(N2KPreferences *prefs);
+  WifiConnection(N2KPreferences *prefs, Stream* logger);
   ~WifiConnection();
   void begin();
   void end();
