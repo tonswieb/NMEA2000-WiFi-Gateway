@@ -104,6 +104,7 @@
         <button class="tablinks" onclick="showTab(event, 'NMEAStream')">NMEA Stream</button>
         <button class="tablinks" onclick="showTab(event, 'Bluetooth')">Bluetooth</button>
         <button class="tablinks" onclick="showTab(event, 'WIFI')">WIFI</button>
+        <button class="tablinks" onclick="showTab(event, 'Console')">Console</button>
         <button class="tablinks" onclick="showTab(event, 'Reset')">Reset</button>
     </div>
 
@@ -201,6 +202,9 @@
             </fieldset>
             <input type="button" value="Save WIFI settings" onclick="submitForm(this.form.name)"/>
         </form>
+    </div>
+    <div id="Console" class="tabcontent">
+        <p id="consoleLog"></p>
     </div>
     <div id="Reset" class="tabcontent">
         <p>Danger zone!</p>
@@ -324,6 +328,12 @@
                         textarea.scrollTop = textarea.scrollHeight;
                     } else if (message.startsWith("V:")) {
                         document.getElementById("ADCValue").innerHTML = message.replace("V:", "");
+                    } else if (message.startsWith("L:")) {
+                        var text = message.replace("L:", "");
+                        var newLine = document.createTextNode(text);
+                        var paragraph = document.getElementById("consoleLog");
+                        paragraph.appendChild(newLine);
+                        paragraph.appendChild(document.createElement("br"));
                     }
                 };
             } catch (exception) {

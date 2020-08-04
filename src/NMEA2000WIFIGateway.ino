@@ -83,6 +83,14 @@ void setup()
 //*****************************************************************************
 void loop()
 {
+  static unsigned long log = millis();
+
+  if (log + UpdatePeriod < millis())
+  {
+    log = millis();
+    webSocketServer.broadcastTXT("L: Log message");
+  }
+
   webserver.handleClient();
   webSocketServer.loop();
   NMEA2000.ParseMessages();
