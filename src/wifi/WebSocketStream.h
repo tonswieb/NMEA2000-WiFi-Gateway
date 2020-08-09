@@ -14,7 +14,6 @@ class WebSocketStream : public Stream {
 
   private:
     WebSocketsServer *webSocketServer;
-    Stream *stream;
 
   public:
     WebSocketStream(WebSocketsServer *webSocketServer) : Stream() {
