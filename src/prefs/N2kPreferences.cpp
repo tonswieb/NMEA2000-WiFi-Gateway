@@ -226,3 +226,29 @@ bool N2KPreferences::isNmeaSrcSerial2Enabled() {
 void N2KPreferences::setNmeaSrcSerial2Callback(std::function<void (bool)> callback) {
     serial2Callback = callback;
 }
+
+void N2KPreferences::setNmeaFilter(const String nmeaFilter) {
+    prefs.putString(PREF_NMEA_TO_FILTER, nmeaFilter);
+    this->nmeaFilter = nmeaFilter;
+}
+const char * N2KPreferences::getNmeaFilter() {
+    return nmeaFilter.c_str();
+}
+
+void N2KPreferences::setNmea200ReceiveFilter(const String nmea200ReceiveFilter) {
+    prefs.putString(PREF_NMEA2000_RECEIVE_FILTER, nmea200ReceiveFilter);
+    this->nmea200ReceiveFilter = nmea200ReceiveFilter;
+}
+
+const char * N2KPreferences::getNmea200ReceiveFilter() {
+    return nmea200ReceiveFilter.c_str();
+}
+
+void N2KPreferences::setNmea2000SendFilter(const String nmea2000SendFilter) {
+    prefs.putString(PREF_NMEA2000_SEND_FILTER, nmea2000SendFilter);
+    this->nmea2000SendFilter = nmea2000SendFilter;
+}
+
+const char * N2KPreferences::getNmea2000SendFilter() {
+    return nmea2000SendFilter.c_str();
+}

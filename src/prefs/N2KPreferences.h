@@ -23,6 +23,7 @@ private:
   bool nmeaToWebSocket;
   bool nmeaToBluetooth;
   bool nmeaToUdp;
+  String nmeaFilter;
 
   //Input sources for NMEA-0183 output.
   bool nmeaSrcBlGps;
@@ -33,6 +34,8 @@ private:
   //NMEA200 preferences
   bool nmea2000ToSerial;
   tNMEA2000::tN2kMode nmea2000Mode;
+  String nmea200ReceiveFilter;
+  String nmea2000SendFilter;
 
   //TODO: Move WIFI preferences to own class
   //WIFI General preferences
@@ -77,10 +80,13 @@ public:
   const char *PREF_NMEA_TO_UDP = "nmeaToUDP";
   const char *PREF_NMEA2000_TO_SERIAL = "n2kToSerial";
   const char *PREF_NMEA2000_MODE = "nmea2000Mode";
+  const char *PREF_NMEA2000_RECEIVE_FILTER = "n2kRxFilter";
+  const char *PREF_NMEA2000_SEND_FILTER = "n2kTxFilter";
   const char *PREF_NMEA_SRC_BL_GPS_ENABLED = "nmeaSrcBlGps";
   const char *PREF_NMEA_SRC_N2K_ENABLED = "nmeaSrcN2k";
   const char *PREF_NMEA_SRC_SERIAL1_ENABLED = "nmeaSrcSerial1";
   const char *PREF_NMEA_SRC_SERIAL2_ENABLED = "nmeaSrcSerial2";
+  const char *PREF_NMEA_TO_FILTER = "nmeaFilter";
 
   N2KPreferences(Stream *logger);
   ~N2KPreferences();
@@ -148,12 +154,19 @@ public:
   //For now support only 1 callback. Should upgrade to support multiple callbacks.
   void setNmeaSrcSerial2Callback(std::function<void (bool)> callback);
   bool isNmeaSrcSerial2Enabled();
+  void setNmeaFilter(const String value);
+  const char * getNmeaFilter();
+
 
   //NMEA2000 Preferences
   void setNmea2000ToSerial(bool value);
   bool isNmea2000ToSerial();
   void setNmeaMode(tNMEA2000::tN2kMode value);
   tNMEA2000::tN2kMode getNmeaMode();
+  void setNmea200ReceiveFilter(const String value);
+  const char * getNmea200ReceiveFilter();
+  void setNmea2000SendFilter(const String value);
+  const char * getNmea2000SendFilter();
 };
 
 #endif

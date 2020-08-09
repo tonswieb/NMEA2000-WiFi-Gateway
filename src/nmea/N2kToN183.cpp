@@ -25,13 +25,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <N2kMessages.h>
 #include <NMEA0183Messages.h>
 #include <math.h>
+#include <sstream>
 
 const double radToDeg = 180.0 / M_PI;
+
+template <typename T> std::string to_string(T value) {
+  //create an output string stream
+  std::ostringstream os;
+  //throw the value into the string stream
+  os << value;
+  //convert the string stream into a string and return
+  return os.str();
+}
 
 //*****************************************************************************
 void N2kToN183::HandleMsg(const tN2kMsg &N2kMsg)
 {
   if (!prefs->isNmeaSrcN2KEnabled()) {
+    return;
+  }
+
+
+  std::string pgn = to_string(N2kMsg.PGN);
+  std::string filter(prefs->getNmea200ReceiveFilter());
+  if (filter.find(pgn) != std::string::npos) {
     return;
   }
 

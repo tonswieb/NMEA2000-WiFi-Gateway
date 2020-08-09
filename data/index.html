@@ -143,6 +143,8 @@
             <input type="checkbox" id="nmeaToBl" name="nmeaToBl"/><br>
             <label for="nmeaToUDP">WIFI clients (via UDP)</label>
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP"/><br>
+            <label for="nmeaFilter">Filter</label>
+            <input type="text" id="nmeaFilter" name="nmeaFilter"/><br>
             <h2>NMEA 2000 Configuration:</h2>
             <label for="nmea2000ToSerial">Log NMEA 2000 to Console</label>
             <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial"/><br>
@@ -154,6 +156,10 @@
                 <option value="3">Send (stealth)</option>
                 <option value="4">Receive and Send (stealth)</option>
               </select>             
+            <label for="n2kTxFilter">Send Filter</label>
+            <input type="text" id="n2kTxFilter" name="n2kTxFilter"/><br>
+            <label for="n2kRxFilter">Receive Filter</label>
+            <input type="text" id="n2kRxFilter" name="n2kRxFilter"/><br>
             <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
         </form>
         <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>
@@ -224,6 +230,7 @@
                 setBoolean(json,"nmeaToSocket");
                 setBoolean(json,"nmeaToBl");
                 setBoolean(json,"nmeaToUDP");
+                setValue(json,"nmeaFilter");
                 setBoolean(json,"nmeaSrcBlGps");
                 setBoolean(json,"nmeaSrcN2k");
                 setBoolean(json,"nmeaSrcSerial1");
