@@ -25,6 +25,7 @@ Author: Timo Lappalainen, Ton Swieb
 #include <NMEA0183Messages.h>
 #include <Time.h>
 #include "util/Log.h"
+#include <prefs/N2KPreferences.h>
 #include "Route.h"
 
 class N183ToN2k {
@@ -38,6 +39,7 @@ class N183ToN2k {
     tNMEA0183 NMEA0183;
     tNMEA2000* pNMEA2000;
     Logger* logger;
+    N2KPreferences *prefs;
 
     void sendPGN127250(const double &heading);
     void sendPGN129025(const double &latitude, const double &longitude);
@@ -59,7 +61,7 @@ class N183ToN2k {
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
   
   public:
-    N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
+    N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
     void handleLoop();
 };
 

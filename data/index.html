@@ -156,9 +156,7 @@
                 <option value="2">Receive and Send</option>
                 <option value="3">Send (stealth)</option>
                 <option value="4">Receive and Send (stealth)</option>
-              </select>             
-            <label for="n2kTxFilter">Send Filter</label>
-            <input type="text" id="n2kTxFilter" name="n2kTxFilter"/><br>
+              </select>
             <label for="n2kRxFilter">Receive Filter</label>
             <input type="text" id="n2kRxFilter" name="n2kRxFilter"/><br>
             <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
@@ -240,6 +238,7 @@
                 setBoolean(json,"nmeaSrcSerial1");
                 setBoolean(json,"nmeaSrcSerial2");
                 setBoolean(json,"nmea2000ToSerial");
+                setValue(json,"n2kRxFilter");
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",0);
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",1);
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",2);

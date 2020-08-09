@@ -243,12 +243,3 @@ void N2KPreferences::setNmea200ReceiveFilter(const String nmea200ReceiveFilter) 
 const char * N2KPreferences::getNmea200ReceiveFilter() {
     return nmea200ReceiveFilter.c_str();
 }
-
-void N2KPreferences::setNmea2000SendFilter(const String nmea2000SendFilter) {
-    prefs.putString(PREF_NMEA2000_SEND_FILTER, nmea2000SendFilter);
-    this->nmea2000SendFilter = nmea2000SendFilter;
-}
-
-const char * N2KPreferences::getNmea2000SendFilter() {
-    return nmea2000SendFilter.c_str();
-}

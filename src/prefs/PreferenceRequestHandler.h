@@ -44,7 +44,6 @@ public:
                 _prefs->setNmeaSrcSerial1Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL1_ENABLED)));
                 _prefs->setNmeaSrcSerial2Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED)));
                 _prefs->setNmeaFilter(server.arg(_prefs->PREF_NMEA_TO_FILTER));
-                _prefs->setNmea2000SendFilter(server.arg(_prefs->PREF_NMEA2000_SEND_FILTER));
                 _prefs->setNmea200ReceiveFilter(server.arg(_prefs->PREF_NMEA2000_RECEIVE_FILTER));
                 _prefs->executeCallbacks();
                 server.send(204);
@@ -93,7 +92,6 @@ public:
                 doc[_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED] =  _prefs->isNmeaSrcSerial2Enabled();
                 doc[_prefs->PREF_NMEA_TO_FILTER] =  _prefs->getNmeaFilter();
                 doc[_prefs->PREF_NMEA2000_RECEIVE_FILTER] =  _prefs->getNmea200ReceiveFilter();
-                doc[_prefs->PREF_NMEA2000_SEND_FILTER] =  _prefs->getNmea2000SendFilter();
 
                 doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndSend] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
                 doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndNode] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;

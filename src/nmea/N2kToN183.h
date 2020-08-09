@@ -32,6 +32,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //------------------------------------------------------------------------------
 class N2kToN183 : public tNMEA2000::tMsgHandler {
+
+private:
+  Stream* logger;
+
 public:
   using tSendNMEA0183MessageCallback=void (*)(const tNMEA0183Msg &NMEA0183Msg);
     
@@ -75,7 +79,7 @@ protected:
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
 
 public:
-  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
+  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs, Stream* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
     _handler_func = handler_func;
     Latitude=N2kDoubleNA; Longitude=N2kDoubleNA; Altitude=N2kDoubleNA;
     Variation=N2kDoubleNA; Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
@@ -88,6 +92,7 @@ public:
     LastWindTime=0;
     LastSystemTime=0;
     this->prefs = prefs;
+    this->logger = logger;
   }
   void HandleMsg(const tN2kMsg &N2kMsg);
   void Update();

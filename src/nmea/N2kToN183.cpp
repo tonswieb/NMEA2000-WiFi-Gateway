@@ -45,10 +45,11 @@ void N2kToN183::HandleMsg(const tN2kMsg &N2kMsg)
     return;
   }
 
-
   std::string pgn = to_string(N2kMsg.PGN);
   std::string filter(prefs->getNmea200ReceiveFilter());
   if (filter.find(pgn) != std::string::npos) {
+    logger->print("Skip PGN: ");
+    logger->println(N2kMsg.PGN);
     return;
   }
 

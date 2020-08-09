@@ -34,8 +34,9 @@ double toMagnetic(double True, double Variation) {
   return magnetic;    
 }
 
-N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, byte maxWpPerRoute, byte maxWpNameLength) {
+N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences* prefs, byte maxWpPerRoute, byte maxWpNameLength) {
 
+  this->prefs = prefs;
   this->logger = logger;
   this->pNMEA2000 = pNMEA2000;
   route = new Route(maxWpPerRoute, maxWpNameLength, logger);
@@ -347,6 +348,15 @@ boolean isMessageCode_P(const tNMEA0183Msg &NMEA0183Msg, const char* code) {
  * iSailor can send APB, BOD, BWC, BWR, HSC, RMB, RMC, XTE
  */
 void N183ToN2k::HandleNMEA0183Msg(const tNMEA0183Msg &NMEA0183Msg) {
+
+  //TODO Extract function
+  //TODO Support a nmea filter per instance
+  std::string messageCode(NMEA0183Msg.MessageCode());
+  std::string filter(prefs->getNmeaFilter());
+  if (filter.find(messageCode) != std::string::npos) {
+    info("Filtering %s",NMEA0183Msg.MessageCode());
+    return;
+  }
 
   debug("Handling NMEA0183 message %s",NMEA0183Msg.MessageCode());
   if (isMessageCode_P(NMEA0183Msg,PSTR("GGA"))) {

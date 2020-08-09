@@ -50,7 +50,7 @@ std::function<void(char *)> nmea0183MessageHandler = [](char *message) {
     webSocketServer.broadcastTXT("N:" + String(message));
   }
   if (prefs.isNmeaToSerial()) {
-    Serial.println(message);
+    multiLog.println(message);
   }
 };
 
@@ -77,9 +77,9 @@ void setup()
   pSerial1ToN183 = new StreamToN183(&Serial1, nmea0183MessageHandler);
   pSerialBtToN183 = new StreamToN183(&SerialBT, nmea0183MessageHandler);
   //TODO: Add multicast to send Serial2 to NNMEA-0183 receivers as well and not only to N2K
-  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs);
+  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs,&multiLog);
   InitNMEA2000(&prefs,pN2kToN183,&multiLog);
   prefs.freeEntries();
 }
