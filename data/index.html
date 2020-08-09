@@ -328,12 +328,18 @@
                         textarea.scrollTop = textarea.scrollHeight;
                     } else if (message.startsWith("V:")) {
                         document.getElementById("ADCValue").innerHTML = message.replace("V:", "");
-                    } else if (message.startsWith("L:")) {
-                        var text = message.replace("L:", "");
-                        var newLine = document.createTextNode(text);
-                        var paragraph = document.getElementById("consoleLog");
-                        paragraph.appendChild(newLine);
-                        paragraph.appendChild(document.createElement("br"));
+                    } else {
+                            if (message.endsWith("\n")) {
+                            var text = message.replace("\n", "")
+                            var newLine = document.createTextNode(text);
+                            var paragraph = document.getElementById("consoleLog");
+                            paragraph.appendChild(newLine);
+                            paragraph.appendChild(document.createElement("br"));
+                        } else {
+                            var newLine = document.createTextNode(message);
+                            var paragraph = document.getElementById("consoleLog");
+                            paragraph.appendChild(newLine);
+                        }
                     }
                 };
             } catch (exception) {
