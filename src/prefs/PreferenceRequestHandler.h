@@ -7,14 +7,16 @@
 #include <HTTP_Method.h>
 #include <ArduinoJson.h>
 #include "N2KPreferences.h"
+#include "wifi/SuspendableHardwareSerial.h"
 #define FILESYSTEM SPIFFS
 
 class PreferenceRequestHandler : public RequestHandler
 {
 public:
-    PreferenceRequestHandler(N2KPreferences *prefs)
+    PreferenceRequestHandler(N2KPreferences *prefs, Stream *logger)
     {
         _prefs = prefs;
+        this->logger = logger;
     }
 
     bool canHandle(HTTPMethod requestMethod, String requestUri) override
@@ -25,7 +27,7 @@ public:
     bool handle(WebServer &server, HTTPMethod requestMethod, String requestUri) override
     {
         if (requestMethod == HTTP_POST) {
-            Serial.println("Handling Form POST: " + requestUri);
+            logger->println("Handling Form POST: " + requestUri);
             if (requestUri.equals("/demoSettings")) {
                 _prefs->setDemoEnabled(String("on").equals(server.arg(_prefs->PREF_DEMO_ENABLED)));
                 _prefs->executeCallbacks();
@@ -37,7 +39,10 @@ public:
                 _prefs->setNmeaToUDP(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_UDP)));
                 _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
                 _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
-                _prefs->setBlGPSEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_BL_GPS_ENABLED)));
+                _prefs->setNmeaSrcBlGPSEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_BL_GPS_ENABLED)));
+                _prefs->setNmeaSrcN2KEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_N2K_ENABLED)));
+                _prefs->setNmeaSrcSerial1Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL1_ENABLED)));
+                _prefs->setNmeaSrcSerial2Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED)));
                 _prefs->executeCallbacks();
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
@@ -59,7 +64,7 @@ public:
                 _prefs->executeCallbacks();
                 server.send(204);
             } else {
-                Serial.println("Received unknown form POST: " + requestUri);
+                logger->println("Received unknown form POST: " + requestUri);
                 server.send(404, "text/plain", "FileNotFound");          
             }
         } else {
@@ -79,7 +84,11 @@ public:
                 doc[_prefs->PREF_NMEA_TO_BL] =  _prefs->isNmeaToBluetooth();
                 doc[_prefs->PREF_NMEA_TO_UDP] =  _prefs->isNmeaToUDP();
                 doc[_prefs->PREF_NMEA2000_TO_SERIAL] =  _prefs->isNmea2000ToSerial();
-                doc[_prefs->PREF_NMEA_BL_GPS_ENABLED] =  _prefs->isBlGPSEnabled();
+                doc[_prefs->PREF_NMEA_SRC_BL_GPS_ENABLED] =  _prefs->isNmeaSrcBlGPSEnabled();
+                doc[_prefs->PREF_NMEA_SRC_N2K_ENABLED] =  _prefs->isNmeaSrcN2KEnabled();
+                doc[_prefs->PREF_NMEA_SRC_SERIAL1_ENABLED] =  _prefs->isNmeaSrcSerial1Enabled();
+                doc[_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED] =  _prefs->isNmeaSrcSerial2Enabled();
+
                 doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndSend] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
                 doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndNode] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;
                 doc["nmea2000Mode" + tNMEA2000::N2km_ListenOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly;
@@ -108,6 +117,7 @@ public:
 
 protected:
     N2KPreferences *_prefs;
+    Stream *logger;
 
     String getContentType(WebServer &server, String filename)
     {
@@ -181,7 +191,7 @@ protected:
     bool handleFileRead(WebServer &server)
     {
         String path = server.uri();
-        Serial.println("handleFileRead: " + path);
+        logger->println("handleFileRead: " + path);
         if (path.endsWith("/")) {
             path += "index.html";
         }

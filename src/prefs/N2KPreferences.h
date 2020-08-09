@@ -13,16 +13,22 @@ private:
   const String WIFI_AP_DEFAULT_SSID = "N2K-Bridge";
   const String WIFI_AP_DEFAULT_PASSWORD = "ChangeMe";
 
+  Stream *logger;
   Preferences prefs;
   bool blEnabled;
   bool demoEnabled;
 
-  //NMEA preferences
+  //NMEA-0183 output receivers
   bool nmeaToSerial;
   bool nmeaToWebSocket;
   bool nmeaToBluetooth;
   bool nmeaToUdp;
-  bool nmeaBlGps;
+
+  //Input sources for NMEA-0183 output.
+  bool nmeaSrcBlGps;
+  bool nmeaSrcN2k;
+  bool nmeaSrcSerial1;
+  bool nmeaSrcSerial2;
 
   //NMEA200 preferences
   bool nmea2000ToSerial;
@@ -44,6 +50,9 @@ private:
 
   //TODO Ugrade to array so we can have more then one callback
   std::function<void ()> callback;
+  std::function<void (bool)> serial1Callback;
+  std::function<void (bool)> serial2Callback;
+
 
   /**
    * Initialize fields from preferences namespace or initialize with default 
@@ -68,9 +77,12 @@ public:
   const char *PREF_NMEA_TO_UDP = "nmeaToUDP";
   const char *PREF_NMEA2000_TO_SERIAL = "n2kToSerial";
   const char *PREF_NMEA2000_MODE = "nmea2000Mode";
-  const char *PREF_NMEA_BL_GPS_ENABLED = "nmeaBlGps";
+  const char *PREF_NMEA_SRC_BL_GPS_ENABLED = "nmeaSrcBlGps";
+  const char *PREF_NMEA_SRC_N2K_ENABLED = "nmeaSrcN2k";
+  const char *PREF_NMEA_SRC_SERIAL1_ENABLED = "nmeaSrcSerial1";
+  const char *PREF_NMEA_SRC_SERIAL2_ENABLED = "nmeaSrcSerial2";
 
-  N2KPreferences();
+  N2KPreferences(Stream *logger);
   ~N2KPreferences();
 
   void registerCallback(std::function<void ()> callback);
@@ -123,8 +135,19 @@ public:
   bool isNmeaToBluetooth();
   void setNmeaToUDP(bool value);
   bool isNmeaToUDP();
-  void setBlGPSEnabled(bool value);
-  bool isBlGPSEnabled();
+
+  void setNmeaSrcBlGPSEnabled(bool value);
+  bool isNmeaSrcBlGPSEnabled();
+  void setNmeaSrcN2KEnabled(bool value);
+  bool isNmeaSrcN2KEnabled();
+  void setNmeaSrcSerial1Enabled(bool value);
+  //For now support only 1 callback. Should upgrade to support multiple callbacks.
+  void setNmeaSrcSerial1Callback(std::function<void (bool)> callback);
+  bool isNmeaSrcSerial1Enabled();
+  void setNmeaSrcSerial2Enabled(bool value);
+  //For now support only 1 callback. Should upgrade to support multiple callbacks.
+  void setNmeaSrcSerial2Callback(std::function<void (bool)> callback);
+  bool isNmeaSrcSerial2Enabled();
 
   //NMEA2000 Preferences
   void setNmea2000ToSerial(bool value);

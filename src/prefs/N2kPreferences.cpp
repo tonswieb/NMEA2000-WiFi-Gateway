@@ -1,6 +1,7 @@
 #include "N2KPreferences.h"
 
-N2KPreferences::N2KPreferences() {
+N2KPreferences::N2KPreferences(Stream *logger) {
+    this->logger = logger;
 }
 
 N2KPreferences::~N2KPreferences() {
@@ -25,7 +26,7 @@ void N2KPreferences::begin() {
 
 void N2KPreferences::freeEntries() {
 
-    Serial.print("[PREF] Free Entries: "); Serial.println(prefs.freeEntries());
+    logger->print("[PREF] Free Entries: "); logger->println(prefs.freeEntries());
 }
 
 
@@ -38,7 +39,10 @@ void N2KPreferences::init() {
     //Retrieve settings, use default if missing and store
     //directly to ensure that everything fits in NVS.
     setBlEnabled(prefs.getBool(PREF_BLUETOOTH_ENABLED,false));
-    setBlGPSEnabled(prefs.getBool(PREF_NMEA_BL_GPS_ENABLED,false));
+    setNmeaSrcBlGPSEnabled(prefs.getBool(PREF_NMEA_SRC_BL_GPS_ENABLED,false));
+    setNmeaSrcN2KEnabled(prefs.getBool(PREF_NMEA_SRC_N2K_ENABLED,true));
+    setNmeaSrcSerial1Enabled(prefs.getBool(PREF_NMEA_SRC_SERIAL1_ENABLED,true));
+    setNmeaSrcSerial2Enabled(prefs.getBool(PREF_NMEA_SRC_SERIAL2_ENABLED,true));
     setDemoEnabled(prefs.getBool(PREF_DEMO_ENABLED, false));
     setUdpBroadcastPort(prefs.getUInt(PREF_WIFI_UDP_PORT, 9876));
     setStationEnabled(prefs.getBool(PREF_WIFI_STA_ENABLED, false));
@@ -182,11 +186,43 @@ tNMEA2000::tN2kMode N2KPreferences::getNmeaMode() {
     return nmea2000Mode;
 }
 
-void N2KPreferences::setBlGPSEnabled(bool value) {
-    prefs.putBool(PREF_NMEA_BL_GPS_ENABLED, value);
-    nmeaBlGps = value;
+void N2KPreferences::setNmeaSrcBlGPSEnabled(bool value) {
+    prefs.putBool(PREF_NMEA_SRC_BL_GPS_ENABLED, value);
+    nmeaSrcBlGps = value;
 }
-
-bool N2KPreferences::isBlGPSEnabled() {
-    return nmeaBlGps;
+bool N2KPreferences::isNmeaSrcBlGPSEnabled() {
+    return nmeaSrcBlGps;
+}
+void N2KPreferences::setNmeaSrcN2KEnabled(bool value) {
+    prefs.putBool(PREF_NMEA_SRC_N2K_ENABLED, value);
+    nmeaSrcN2k = value;
+}
+bool N2KPreferences::isNmeaSrcN2KEnabled() {
+    return nmeaSrcN2k;
+}
+void N2KPreferences::setNmeaSrcSerial1Enabled(bool value) {
+    prefs.putBool(PREF_NMEA_SRC_SERIAL1_ENABLED, value);
+    nmeaSrcSerial1 = value;
+    if (serial1Callback) {
+        serial1Callback(value);
+    }
+}
+bool N2KPreferences::isNmeaSrcSerial1Enabled() {
+    return nmeaSrcSerial1;
+}
+void N2KPreferences::setNmeaSrcSerial1Callback(std::function<void (bool)> callback) {
+    serial1Callback = callback;
+}
+void N2KPreferences::setNmeaSrcSerial2Enabled(bool value) {
+    prefs.putBool(PREF_NMEA_SRC_SERIAL2_ENABLED, value);
+    nmeaSrcSerial2 = value;
+    if (serial2Callback) {
+        serial2Callback(value);
+    }
+}
+bool N2KPreferences::isNmeaSrcSerial2Enabled() {
+    return nmeaSrcSerial2;
+}
+void N2KPreferences::setNmeaSrcSerial2Callback(std::function<void (bool)> callback) {
+    serial2Callback = callback;
 }

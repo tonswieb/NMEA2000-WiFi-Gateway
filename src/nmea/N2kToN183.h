@@ -27,6 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <NMEA0183.h>
 #include <NMEA2000.h>
 #include <functional>
+#include <prefs/N2KPreferences.h>
 #define MAX_NMEA0183_MESSAGE_SIZE 100
 
 //------------------------------------------------------------------------------
@@ -56,6 +57,7 @@ protected:
   unsigned long NextRMCSend;
 
   std::function<void (char*)> _handler_func;
+  N2KPreferences *prefs;
 
 protected:
   void HandleSystemTime(const tN2kMsg &N2kMsg); // 126992
@@ -73,7 +75,7 @@ protected:
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
 
 public:
-  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
+  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
     _handler_func = handler_func;
     Latitude=N2kDoubleNA; Longitude=N2kDoubleNA; Altitude=N2kDoubleNA;
     Variation=N2kDoubleNA; Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
@@ -85,6 +87,7 @@ public:
     LastPositionTime=0;
     LastWindTime=0;
     LastSystemTime=0;
+    this->prefs = prefs;
   }
   void HandleMsg(const tN2kMsg &N2kMsg);
   void Update();
