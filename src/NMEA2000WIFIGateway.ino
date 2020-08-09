@@ -17,17 +17,21 @@
 #include "wifi/SuspendableHardwareSerial.h"
 #include "wifi/WifiConnection.h"
 #include "wifi/Bluetooth.h"
+#include "wifi/WebSocketStream.h"
+#include "wifi/MulticastStream.h"
 #include "util/Hardware.h"
 
 HardwareSerial Serial(0);
-SuspendableHardwareSerial Serial1(1,&Serial);
-SuspendableHardwareSerial Serial2(2,&Serial);
-N2KPreferences prefs(&Serial);
-WifiConnection wifiClient(&prefs,&Serial);
 WebServer webserver(80);
 WebSocketsServer webSocketServer = WebSocketsServer(8080);
+WebSocketStream webLog = WebSocketStream(&webSocketServer);
+MulticastStream multiLog = MulticastStream(&Serial,&webLog);
+N2KPreferences prefs(&multiLog);
+WifiConnection wifiClient(&prefs,&Serial);
 BluetoothSerial SerialBT;
-Bluetooth bluetooth(&SerialBT,&prefs,&Serial);
+Bluetooth bluetooth(&SerialBT,&prefs,&multiLog);
+SuspendableHardwareSerial Serial1(1,&multiLog);
+SuspendableHardwareSerial Serial2(2,&multiLog);
 Hardware hardware;
 Logger* logger;
 
@@ -65,24 +69,24 @@ void setup()
   hardware.handleVCCUpdate([](String message){ webSocketServer.broadcastTXT(message);});
   SPIFFS.begin();
   wifiClient.begin();
-  webserver.addHandler(new PreferenceRequestHandler(&prefs,&Serial));
+  webserver.addHandler(new PreferenceRequestHandler(&prefs,&multiLog));
   webserver.begin();
   webSocketServer.begin();
   bluetooth.begin();
-  logger = new Logger(&Serial,DEBUG_LEVEL_TRACE);
+  logger = new Logger(&multiLog,DEBUG_LEVEL_TRACE);
   pSerial1ToN183 = new StreamToN183(&Serial1, nmea0183MessageHandler);
   pSerialBtToN183 = new StreamToN183(&SerialBT, nmea0183MessageHandler);
   //TODO: Add multicast to send Serial2 to NNMEA-0183 receivers as well and not only to N2K
   pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
   pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), logger,MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
   pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs);
-  InitNMEA2000(&prefs,pN2kToN183,&Serial);
+  InitNMEA2000(&prefs,pN2kToN183,&multiLog);
   prefs.freeEntries();
 }
 
 //*****************************************************************************
-void loop()
-{
+void loop() {
+
   webserver.handleClient();
   webSocketServer.loop();
   NMEA2000.ParseMessages();

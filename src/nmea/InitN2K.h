@@ -44,8 +44,10 @@ void InitNMEA2000(N2KPreferences *prefs, N2kToN183 *pN2kToN183, Stream *logger)
     // List here messages your device will transmit.
     unsigned const static long TransmitMessages[] PROGMEM={127250L,129283L,129284L,129285L,126992L,129025L,129026L,129029L,0};
     NMEA2000.ExtendTransmitMessages(TransmitMessages);
-    NMEA2000.SetProductInformation("00000008",107,"NMEA0183 -> N2k -> PC","1.0.0.0 (2017-07-16)","1.0.0.0 (2017-07-16)" );
-    NMEA2000.SetDeviceInformation(8,130,25,2046);
+    NMEA2000.SetProductInformation("00000008",107,"NMEA 0183 WIFI/Bluetooth Gateway","1.0.0.0 (2020-08-09)","1.0.0.0 (2020-08-09)" );
+    //Set to NMEA 0183 Gateway according to http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20&%20function%20codes%20v%202.00.pdf
+    //Set IndustryGroup = 2046 because not used in: http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf
+    NMEA2000.SetDeviceInformation(1,135,25,2046);
   }
   NMEA2000.AttachMsgHandler(pN2kToN183); // NMEA 2000 -> NMEA 0183 conversion
   NMEA2000.Open();
