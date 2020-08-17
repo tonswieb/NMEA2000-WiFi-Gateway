@@ -71,7 +71,7 @@ public:
             }
         } else {
             if (requestUri.equals("/load")) {
-                StaticJsonDocument<500> doc;
+                StaticJsonDocument<600> doc;
                 doc[_prefs->PREF_BLUETOOTH_ENABLED] =  _prefs->isBlEnabled();
                 doc[_prefs->PREF_DEMO_ENABLED] =  _prefs->isDemoEnabled();
                 doc[_prefs->PREF_WIFI_STA_ENABLED] =  _prefs->getStationEnabled();
@@ -93,12 +93,12 @@ public:
                 doc[_prefs->PREF_NMEA_TO_FILTER] =  _prefs->getNmeaFilter();
                 doc[_prefs->PREF_NMEA2000_RECEIVE_FILTER] =  _prefs->getNmea200ReceiveFilter();
 
-                doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndSend] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
-                doc["nmea2000Mode" + tNMEA2000::N2km_ListenAndNode] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;
-                doc["nmea2000Mode" + tNMEA2000::N2km_ListenOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly;
-                doc["nmea2000Mode" + tNMEA2000::N2km_NodeOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_NodeOnly;
-                doc["nmea2000Mode" + tNMEA2000::N2km_SendOnly] =  _prefs->getNmeaMode() == tNMEA2000::N2km_SendOnly;
-                char buffer[500];
+                doc["nmea2000Mode4"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
+                doc["nmea2000Mode2"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;
+                doc["nmea2000Mode0"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly;
+                doc["nmea2000Mode1"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_NodeOnly;
+                doc["nmea2000Mode3"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_SendOnly;
+                char buffer[600];
                 serializeJson(doc, buffer);
                 server.send(200,"application/json",buffer);
             } else if (requestUri.equals("/reboot")) {
