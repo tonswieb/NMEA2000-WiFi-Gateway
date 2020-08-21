@@ -34,12 +34,20 @@ Author: Ton Swieb
 #define logln(message) if (logger!=0) {logger->getStream()->println(message);}
 #define log_P(message) if (logger!=0) {logger->getStream()->print(F(message));}
 #define logln_P(message) if (logger!=0) {logger->getStream()->println(F(message));}
-#define error(fmt, ...) if (logger!=0) {logger->logError(F(fmt), ##__VA_ARGS__);}
-#define warn(fmt, ...) if (logger!=0) {logger->logWarn(F(fmt), ##__VA_ARGS__);}
-#define info(fmt, ...) if (logger!=0) {logger->logInfo(F(fmt), ##__VA_ARGS__);}
-#define debug(fmt, ...) if (logger!=0) {logger->logDebug(F(fmt), ##__VA_ARGS__);}
-#define trace(fmt, ...) if (logger!=0) {logger->logTrace(F(fmt), ##__VA_ARGS__);}
-#define toLogString(__val, __width, __prec) logger !=0 ? logger->doubleToString(__val,__width,__prec) : NULL
+
+#ifdef __AVR__
+  #define error(fmt, ...) if (logger!=0) {logger->logError(F(fmt), ##__VA_ARGS__);}
+  #define warn(fmt, ...) if (logger!=0) {logger->logWarn(F(fmt), ##__VA_ARGS__);}
+  #define info(fmt, ...) if (logger!=0) {logger->logInfo(F(fmt), ##__VA_ARGS__);}
+  #define debug(fmt, ...) if (logger!=0) {logger->logDebug(F(fmt), ##__VA_ARGS__);}
+  #define trace(fmt, ...) if (logger!=0) {logger->logTrace(F(fmt), ##__VA_ARGS__);}
+#else
+  #define error(fmt, ...) if (logger!=0) {logger->logError(fmt, ##__VA_ARGS__);}
+  #define warn(fmt, ...) if (logger!=0) {logger->logWarn(fmt, ##__VA_ARGS__);}
+  #define info(fmt, ...) if (logger!=0) {logger->logInfo(fmt, ##__VA_ARGS__);}
+  #define debug(fmt, ...) if (logger!=0) {logger->logDebug(fmt, ##__VA_ARGS__);}
+  #define trace(fmt, ...) if (logger!=0) {logger->logTrace(fmt, ##__VA_ARGS__);}
+#endif
 
 class Logger {
 
@@ -51,12 +59,19 @@ class Logger {
   public:
     int getLevel();
     Stream* getStream();
+  #ifdef _AVR_
     void logError(const __FlashStringHelper *fmt, ...);
     void logWarn(const __FlashStringHelper *fmt, ...);
     void logInfo(const __FlashStringHelper *fmt, ...);
     void logDebug(const __FlashStringHelper *fmt, ...);
     void logTrace(const __FlashStringHelper *fmt, ...);
-    char* doubleToString(double   __val, signed char   __width, unsigned char   __prec);
+  #else
+    void logError(char *fmt, ...);
+    void logWarn(char *fmt, ...);
+    void logInfo(char *fmt, ...);
+    void logDebug(char *fmt, ...);
+    void logTrace(char *fmt, ...);
+  #endif
     Logger (Stream* logger, int logLevel = DEBUG_LEVEL_INFO);
 };
 

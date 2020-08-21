@@ -49,6 +49,7 @@ class N183ToN2k {
     void sendPGN129283(const tRMB &rmb);
     void sendPGN129284(const tRMB &rmb);
     void sendPGN129285();
+    void sendPGN129285(const tRMB &rmb);
 
     void HandleNMEA0183Msg(const tNMEA0183Msg &NMEA0183Msg);
     void HandleRMB(const tNMEA0183Msg &NMEA0183Msg);
