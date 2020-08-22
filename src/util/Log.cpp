@@ -13,7 +13,7 @@ Author: Ton Swieb
  
 #include "Log.h"
 
-Logger::Logger(Stream* logger, int debugLevel) : logger(logger), debugLevel(debugLevel) {
+Logger::Logger(Stream* logger) : logger(logger) {
 
   printfWrapper = new PrintfWrapper(logger,256);
 }

@@ -26,13 +26,13 @@ WebServer webserver(80);
 WebSocketsServer webSocketServer = WebSocketsServer(8080);
 WebSocketStream webLog = WebSocketStream(&webSocketServer);
 MulticastStream multiLog = MulticastStream(&Serial,&webLog);
-Logger* logger;
-N2KPreferences prefs(logger);
-WifiConnection wifiClient(&prefs,logger);
+Logger logger = Logger(&multiLog);
+N2KPreferences prefs(&logger);
+WifiConnection wifiClient(&prefs,&logger);
 BluetoothSerial SerialBT;
-Bluetooth bluetooth(&SerialBT,&prefs,logger);
-SuspendableHardwareSerial Serial1(1,logger);
-SuspendableHardwareSerial Serial2(2,logger);
+Bluetooth bluetooth(&SerialBT,&prefs,&logger);
+SuspendableHardwareSerial Serial1(1,&logger);
+SuspendableHardwareSerial Serial2(2,&logger);
 Hardware hardware;
 
 StreamToN183 *pSerial1ToN183;
@@ -63,26 +63,25 @@ void setup()
   
   prefs.setNmeaSrcSerial1Callback([](bool enable) {Serial1.suspend(!enable);});
   prefs.setNmeaSrcSerial2Callback([](bool enable) {Serial2.suspend(!enable);});
+  prefs.setLogLevelCallBack([](int level) {logger.setLevel(level);});
   //Initialize callbacks before begin() so preferences are correctly initialized on all callbacks.
   prefs.begin();
-  logger = new Logger(&multiLog,prefs.getLogLevel());
   hardware.begin();
   hardware.handleVCCUpdate([](String message){ webSocketServer.broadcastTXT(message);});
   SPIFFS.begin();
   wifiClient.begin();
-  webserver.addHandler(new PreferenceRequestHandler(&prefs,logger));
+  webserver.addHandler(new PreferenceRequestHandler(&prefs,&logger));
   webserver.begin();
   webSocketServer.begin();
   bluetooth.begin();
-  prefs.setLogLevelCallBack([](int level) {logger->setLevel(level);});
   pSerial1ToN183 = new StreamToN183(&Serial1, nmea0183MessageHandler);
   pSerialBtToN183 = new StreamToN183(&SerialBT, nmea0183MessageHandler);
   //TODO: Add multicast to send Serial2 to NNMEA-0183 receivers as well and not only to N2K
-  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs,logger);
-  InitNMEA2000(&prefs,pN2kToN183,logger);
-  prefs.setNmea2000Callback([]() {InitNMEA2000(&prefs,pN2kToN183,logger);});
+  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs, &logger);
+  InitNMEA2000(&prefs,pN2kToN183, &logger);
+  prefs.setNmea2000Callback([]() {InitNMEA2000(&prefs,pN2kToN183, &logger);});
   prefs.freeEntries();
 }
 

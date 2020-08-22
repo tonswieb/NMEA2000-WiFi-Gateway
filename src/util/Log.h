@@ -53,7 +53,7 @@ class Logger {
 
   private:
     Stream* logger;
-    byte debugLevel;
+    byte debugLevel = DEBUG_LEVEL_WARN;
     PrintfWrapper* printfWrapper;
 
   public:
@@ -73,7 +73,7 @@ class Logger {
     void logDebug(char *fmt, ...);
     void logTrace(char *fmt, ...);
   #endif
-    Logger (Stream* logger, int logLevel = DEBUG_LEVEL_INFO);
+    Logger (Stream* logger);
 };
 
 #endif

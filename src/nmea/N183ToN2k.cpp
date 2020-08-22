@@ -124,7 +124,7 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
 void N183ToN2k::sendPGN129285() {
 
   if (!route->isValid()) {
-    info("Skip sending PGN129285, route is not complete yet.");
+    debug("Skip sending PGN129285, route is not complete yet.");
     return;
   }
 

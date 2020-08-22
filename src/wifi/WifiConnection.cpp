@@ -47,6 +47,7 @@ void WifiConnection::setupWIFI()
             info("");
             info("[WIFI] Network found and logged in");
             ipLok = WiFi.localIP();
+            info("[WIFI] Hostname: %s",WiFi.getHostname());
         }
     } else {
         info("[WIFI] Station mode is disabled.");
@@ -62,8 +63,7 @@ void WifiConnection::setupWIFI()
         WiFi.softAP(prefs->getApSSID(), prefs->getApPassword());
         ipLok = WiFi.softAPIP();
     }
-    info("[WIFI] Hostname: %s",WiFi.getMode() == WIFI_STA ? WiFi.getHostname() : WiFi.softAPgetHostname());
-    info("[WIFI] IP address: %s",ipLok);
+    info("[WIFI] IP address: %u.%u:%u.%u",ipLok[0],ipLok[1],ipLok[2],ipLok[3]);
     ipLok[3] = 255;
     info("[WIFI] UDPport: %u",prefs->getUdpBroadcastPort());
     info("[WIFI] Setup ready.");
