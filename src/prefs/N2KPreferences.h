@@ -13,6 +13,8 @@ class N2KPreferences {
 private:
   const String WIFI_AP_DEFAULT_SSID = "N2K-Bridge";
   const String WIFI_AP_DEFAULT_PASSWORD = "ChangeMe";
+  //Filter the PGN's we do not use in iSailor
+  const String NMEA2000_RECEIVE_FILTER = "127250,127251,128259,128267,130306";
 
   Logger *logger;
   Preferences prefs;

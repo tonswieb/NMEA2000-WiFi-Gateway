@@ -58,6 +58,7 @@ void N2KPreferences::init() {
     setNmeaToUDP(prefs.getBool(PREF_NMEA_TO_UDP,true));
     setNmea2000ToSerial(prefs.getBool(PREF_NMEA2000_TO_SERIAL,false));
     setNmeaMode((tNMEA2000::tN2kMode) prefs.getUChar(PREF_NMEA2000_MODE, tNMEA2000::N2km_ListenOnly));
+    setNmea200ReceiveFilter(prefs.getString(PREF_NMEA2000_RECEIVE_FILTER, NMEA2000_RECEIVE_FILTER));
 }
 
 void N2KPreferences::reset() {
