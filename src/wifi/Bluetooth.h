@@ -3,6 +3,7 @@
 
 #include <BluetoothSerial.h>
 #include <prefs/N2KPreferences.h>
+#include <util/Log.h>
 
 extern HardwareSerial Serial;
 
@@ -14,13 +15,13 @@ private:
   bool blGpsEnabled;
   BluetoothSerial *SerialBT;
   N2KPreferences *prefs;
-  Stream *logger;
+  Logger *logger;
 
   void connectBlGps();
   void disconnectBlGps();
 
 public:
-  Bluetooth(BluetoothSerial *bluetoothSerial, N2KPreferences *prefs, Stream* logger);
+  Bluetooth(BluetoothSerial *bluetoothSerial, N2KPreferences *prefs, Logger* logger);
   void begin();
   void end();
   void sendUdpPackage(char *message);

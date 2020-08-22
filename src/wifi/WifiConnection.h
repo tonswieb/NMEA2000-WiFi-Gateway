@@ -7,6 +7,7 @@
 #include <WiFiUdp.h>
 #include <prefs/N2KPreferences.h>
 #include "UdpStream.h"
+#include "util/Log.h"
 
 class WifiConnection
 {
@@ -16,13 +17,13 @@ private:
   IPAddress ipLok;
   WiFiUDP udp;
   UdpStream udpStream = UdpStream(&udp);
-  Stream *logger;
+  Logger *logger;
 
   void setupWIFI();
   void setup_OTA();
 
 public:
-  WifiConnection(N2KPreferences *prefs, Stream* logger);
+  WifiConnection(N2KPreferences *prefs, Logger* logger);
   ~WifiConnection();
   void begin();
   void end();

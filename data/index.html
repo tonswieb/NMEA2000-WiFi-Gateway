@@ -115,12 +115,20 @@
         <div class="card">
             NMEA2000 bus voltage: <span id="ADCValue">0</span>V<br>
         </div>
-        <form name="demoSettings">
+        <form name="generalSettings">
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
-            <input type="hidden" id="demoSettingsForm" name="demoSettingsForm" value="dummy" />
+            <input type="hidden" id="generalSettingsForm" name="generalSettingsForm" value="dummy" />
             <label for="demoEnabled">Demo data Enabled</label>
             <input type="checkbox" id="demoEnabled" name="demoEnabled"/><br>
-            <input type="button" value="Save Demo Settings" onclick="submitForm(this.form.name)"/>
+            <label for="logLevel">Log Level</label>
+            <select id="logLevel" name="logLevel">
+                <option value="0">ERROR</option>
+                <option value="1">WARN</option>
+                <option value="2">INFO</option>
+                <option value="3">DEBUG</option>
+                <option value="4">TRACE</option>
+              </select>
+            <input type="button" value="Save" onclick="submitForm(this.form.name)"/>
         </form>
     </div>
     <div id="NMEA0183" class="tabcontent">
@@ -236,6 +244,7 @@
             xhttp.onload  = function() {
                 var json = JSON.parse(xhttp.responseText);
                 setBoolean(json,"demoEnabled");
+                setListValue(json,"logLevel");
                 setBoolean(json,"nmeaToSerial");
                 setBoolean(json,"nmeaToSocket");
                 setBoolean(json,"nmeaToBl");
@@ -247,11 +256,7 @@
                 setBoolean(json,"nmeaSrcSerial2");
                 setBoolean(json,"n2kToSerial");
                 setValue(json,"n2kRxFilter");
-                setListValue(json,"nmea2000Mode0","nmea2000Mode",0);
-                setListValue(json,"nmea2000Mode1","nmea2000Mode",1);
-                setListValue(json,"nmea2000Mode2","nmea2000Mode",2);
-                setListValue(json,"nmea2000Mode3","nmea2000Mode",3);
-                setListValue(json,"nmea2000Mode4","nmea2000Mode",4);
+                setListValue(json,"nmea2000Mode");
                 setBoolean(json,"blEnabled");
                 setValue(json,"wifiUdpPort");
                 setBoolean(json,"wifiStaEnabled");
@@ -270,8 +275,9 @@
         function setValue(json, name) {
             document.getElementsByName(name)[0].value = json[name];
         }
-        function setListValue(json, jsonField, list, index) {
-            document.getElementById(list).getElementsByTagName("option")[index].selected = json[jsonField] ? 'selected' : '';
+        function setListValue(json, jsonField) {
+            index = json[jsonField];
+            document.getElementById(jsonField).getElementsByTagName("option")[index].selected = 'selected';
         }
 
         function showTab(evt, tabName) {

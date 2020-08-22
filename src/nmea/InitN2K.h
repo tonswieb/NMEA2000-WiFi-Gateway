@@ -7,9 +7,10 @@
 
 #include <NMEA2000_CAN.h>
 #include "prefs/N2KPreferences.h"
+#include <util/Log.h>
 #include "N2kToN183.h"
 
-String printMode(tNMEA2000::tN2kMode _N2kMode) {
+char* printMode(tNMEA2000::tN2kMode _N2kMode) {
 
   switch (_N2kMode) {
 
@@ -27,19 +28,19 @@ String printMode(tNMEA2000::tN2kMode _N2kMode) {
 }
 
 //*****************************************************************************
-void InitNMEA2000(N2KPreferences *prefs, N2kToN183 *pN2kToN183, Stream *logger)
+void InitNMEA2000(N2KPreferences *prefs, N2kToN183 *pN2kToN183, Logger *logger)
 {
   // List here messages your device will transmit.
   NMEA2000.SetN2kCANMsgBufSize(8);
   NMEA2000.SetN2kCANReceiveFrameBufSize(100);
-  NMEA2000.SetForwardStream(logger);            // PC output on due native port
+  NMEA2000.SetForwardStream(logger->getStream());            // PC output on due native port
   NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text
   NMEA2000.EnableForward(prefs->isNmea2000ToSerial());
   tNMEA2000::tN2kMode mode = prefs->getNmeaMode();
-  logger->println(printMode(mode));
+  info(printMode(mode));
   NMEA2000.SetMode(mode);
   if (mode == tNMEA2000::N2km_ListenAndNode || mode == tNMEA2000::N2km_NodeOnly || mode == tNMEA2000::N2km_SendOnly) {
-    logger->println("Initializing Product and Device Information");
+    info("Initializing Product and Device Information");
     // List here messages your device will transmit.
     unsigned const static long TransmitMessages[] PROGMEM={127250L,129283L,129284L,129285L,126992L,129025L,129026L,129029L,0};
     NMEA2000.ExtendTransmitMessages(TransmitMessages);
@@ -50,7 +51,7 @@ void InitNMEA2000(N2KPreferences *prefs, N2kToN183 *pN2kToN183, Stream *logger)
   }
   NMEA2000.AttachMsgHandler(pN2kToN183); // NMEA 2000 -> NMEA 0183 conversion
   NMEA2000.Open();
-  logger->println("NMEA200 initialized.");
+  info("NMEA200 initialized.");
 }
 
 #endif

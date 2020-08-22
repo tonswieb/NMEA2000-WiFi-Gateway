@@ -1,6 +1,6 @@
 #include "N2KPreferences.h"
 
-N2KPreferences::N2KPreferences(Stream *logger) {
+N2KPreferences::N2KPreferences(Logger *logger) {
     this->logger = logger;
 }
 
@@ -26,7 +26,7 @@ void N2KPreferences::begin() {
 
 void N2KPreferences::freeEntries() {
 
-    logger->print("[PREF] Free Entries: "); logger->println(prefs.freeEntries());
+    info("[PREF] Free Entries: %u",prefs.freeEntries());
 }
 
 
@@ -39,6 +39,7 @@ void N2KPreferences::init() {
     //Retrieve settings, use default if missing and store
     //directly to ensure that everything fits in NVS.
     setBlEnabled(prefs.getBool(PREF_BLUETOOTH_ENABLED,false));
+    setLogLevel(prefs.getUInt(PREF_LOG_LEVEL,DEBUG_LEVEL_WARN));
     setNmeaSrcBlGPSEnabled(prefs.getBool(PREF_NMEA_SRC_BL_GPS_ENABLED,false));
     setNmeaSrcN2KEnabled(prefs.getBool(PREF_NMEA_SRC_N2K_ENABLED,true));
     setNmeaSrcSerial1Enabled(prefs.getBool(PREF_NMEA_SRC_SERIAL1_ENABLED,true));
@@ -86,6 +87,23 @@ bool N2KPreferences::isBlEnabled() {
 bool N2KPreferences::isDemoEnabled() {
     return demoEnabled;
 }
+
+void N2KPreferences::setLogLevel(int logLevel) {
+    prefs.putUInt(PREF_LOG_LEVEL, logLevel);
+    this->logLevel = logLevel;
+    if (logLevelCallback) {
+        logLevelCallback(logLevel);
+    }
+}
+
+int N2KPreferences::getLogLevel() {
+    return logLevel;
+}
+
+void N2KPreferences::setLogLevelCallBack(std::function<void (int)> callback) {
+    logLevelCallback = callback;
+}
+
 
 //WIFI General
 void N2KPreferences::setUdpBroadcastPort(int port) {

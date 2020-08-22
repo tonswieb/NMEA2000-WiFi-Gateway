@@ -58,6 +58,7 @@ class Logger {
 
   public:
     int getLevel();
+    void setLevel(int level);
     Stream* getStream();
   #ifdef _AVR_
     void logError(const __FlashStringHelper *fmt, ...);

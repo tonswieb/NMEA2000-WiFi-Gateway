@@ -36,7 +36,7 @@ void btCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     }
 }
 
-Bluetooth::Bluetooth(BluetoothSerial *bluetoothSerial,N2KPreferences *prefs, Stream* logger)
+Bluetooth::Bluetooth(BluetoothSerial *bluetoothSerial,N2KPreferences *prefs, Logger* logger)
 {
     this->SerialBT = bluetoothSerial;
     this->logger = logger;
@@ -53,7 +53,7 @@ void Bluetooth::begin() {
 
   if (prefs->isBlEnabled() && !blEnabled) {
     blEnabled = true;
-    logger->println("Initializing bluetooth.");
+    info("Initializing bluetooth.");
     SerialBT->begin("N2K-bridge", true);
   }
   connectBlGps();
@@ -62,7 +62,7 @@ void Bluetooth::begin() {
 void Bluetooth::end() {
     disconnectBlGps();
     if (!prefs->isBlEnabled() && blEnabled) {
-        logger->println("Disable Bluetooth");
+        info("Disable Bluetooth");
         blEnabled = false;
         SerialBT->end();
     }

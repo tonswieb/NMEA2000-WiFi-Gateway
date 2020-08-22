@@ -6,6 +6,7 @@
 #include <nvs_flash.h>
 #include <NMEA2000.h>
 #include <functional>
+#include <util/Log.h>
 
 class N2KPreferences {
 
@@ -13,10 +14,11 @@ private:
   const String WIFI_AP_DEFAULT_SSID = "N2K-Bridge";
   const String WIFI_AP_DEFAULT_PASSWORD = "ChangeMe";
 
-  Stream *logger;
+  Logger *logger;
   Preferences prefs;
   bool blEnabled;
   bool demoEnabled;
+  int logLevel;
 
   //NMEA-0183 output receivers
   bool nmeaToSerial;
@@ -52,6 +54,7 @@ private:
 
   //TODO Ugrade to array so we can have more then one callback
   std::function<void ()> callback;
+  std::function<void (int)> logLevelCallback;
   std::function<void (bool)> serial1Callback;
   std::function<void (bool)> serial2Callback;
   std::function<void ()> nmea2000Callback;
@@ -67,6 +70,7 @@ public:
   const char *PREF_SPACE = "N2k-bridge";
   const char *PREF_BLUETOOTH_ENABLED = "blEnabled";
   const char *PREF_DEMO_ENABLED = "demoEnabled";
+  const char *PREF_LOG_LEVEL = "logLevel";
   const char *PREF_WIFI_STA_ENABLED = "wifiStaEnabled";
   const char *PREF_WIFI_STA_HOSTNAME = "wifiStaHostname";
   const char *PREF_WIFI_STA_SSID = "wifiStaSsid";
@@ -87,7 +91,7 @@ public:
   const char *PREF_NMEA_SRC_SERIAL2_ENABLED = "nmeaSrcSerial2";
   const char *PREF_NMEA_TO_FILTER = "nmeaFilter";
 
-  N2KPreferences(Stream *logger);
+  N2KPreferences(Logger *logger);
   ~N2KPreferences();
 
   void registerCallback(std::function<void ()> callback);
@@ -110,6 +114,9 @@ public:
   bool isBlEnabled();
   void setDemoEnabled(bool value);
   bool isDemoEnabled();
+  void setLogLevel(int logLevel);
+  int getLogLevel();
+  void setLogLevelCallBack(std::function<void (int)> callback);
 
   //WIFI General
   void setUdpBroadcastPort(int port);

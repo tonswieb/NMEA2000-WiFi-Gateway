@@ -8,12 +8,13 @@
 #include <ArduinoJson.h>
 #include "N2KPreferences.h"
 #include "wifi/SuspendableHardwareSerial.h"
+#include "util/Log.h"
 #define FILESYSTEM SPIFFS
 
 class PreferenceRequestHandler : public RequestHandler
 {
 public:
-    PreferenceRequestHandler(N2KPreferences *prefs, Stream *logger)
+    PreferenceRequestHandler(N2KPreferences *prefs, Logger* logger)
     {
         _prefs = prefs;
         this->logger = logger;
@@ -27,9 +28,12 @@ public:
     bool handle(WebServer &server, HTTPMethod requestMethod, String requestUri) override
     {
         if (requestMethod == HTTP_POST) {
-            logger->println("Handling Form POST: " + requestUri);
-            if (requestUri.equals("/demoSettings")) {
+
+            trace("Handling Form POST: %s",requestUri);
+            if (requestUri.equals("/generalSettings")) {
                 _prefs->setDemoEnabled(String("on").equals(server.arg(_prefs->PREF_DEMO_ENABLED)));
+                //TODO: Handle empty String and not a valid integer gracefully. No it just crashes!
+                _prefs->setLogLevel(server.arg(_prefs->PREF_LOG_LEVEL).toInt());
                 _prefs->executeCallbacks();
                 server.send(204);
             } else if (requestUri.equals("/nmeaSettings")) {
@@ -69,7 +73,7 @@ public:
                 _prefs->executeCallbacks();
                 server.send(204);
             } else {
-                logger->println("Received unknown form POST: " + requestUri);
+                warn("Received unknown form POST: %s",requestUri);
                 server.send(404, "text/plain", "FileNotFound");          
             }
         } else {
@@ -77,6 +81,7 @@ public:
                 StaticJsonDocument<600> doc;
                 doc[_prefs->PREF_BLUETOOTH_ENABLED] =  _prefs->isBlEnabled();
                 doc[_prefs->PREF_DEMO_ENABLED] =  _prefs->isDemoEnabled();
+                doc[_prefs->PREF_LOG_LEVEL] =  _prefs->getLogLevel();
                 doc[_prefs->PREF_WIFI_STA_ENABLED] =  _prefs->getStationEnabled();
                 doc[_prefs->PREF_WIFI_UDP_PORT] =  String(_prefs->getUdpBroadcastPort());
                 doc[_prefs->PREF_WIFI_STA_HOSTNAME] =  _prefs->getStationHostname();
@@ -95,12 +100,7 @@ public:
                 doc[_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED] =  _prefs->isNmeaSrcSerial2Enabled();
                 doc[_prefs->PREF_NMEA_TO_FILTER] =  _prefs->getNmeaFilter();
                 doc[_prefs->PREF_NMEA2000_RECEIVE_FILTER] =  _prefs->getNmea200ReceiveFilter();
-
-                doc["nmea2000Mode4"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndSend;
-                doc["nmea2000Mode2"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenAndNode;
-                doc["nmea2000Mode0"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_ListenOnly;
-                doc["nmea2000Mode1"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_NodeOnly;
-                doc["nmea2000Mode3"] =  _prefs->getNmeaMode() == tNMEA2000::N2km_SendOnly;
+                doc[_prefs->PREF_NMEA2000_MODE] =  _prefs->getNmeaMode();
                 char buffer[600];
                 serializeJson(doc, buffer);
                 server.send(200,"application/json",buffer);
@@ -124,7 +124,7 @@ public:
 
 protected:
     N2KPreferences *_prefs;
-    Stream *logger;
+    Logger *logger;
 
     String getContentType(WebServer &server, String filename)
     {
@@ -198,7 +198,7 @@ protected:
     bool handleFileRead(WebServer &server)
     {
         String path = server.uri();
-        logger->println("handleFileRead: " + path);
+        trace("handleFileRead: %s",path);
         if (path.endsWith("/")) {
             path += "index.html";
         }

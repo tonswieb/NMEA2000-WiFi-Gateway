@@ -26,6 +26,10 @@ Stream* Logger::getStream() {
   return logger;
 }
 
+void Logger::setLevel(int level) {
+  debugLevel = level;
+}
+
 #ifndef _AVR_
 void Logger::logError(char *fmt, ...) {
 

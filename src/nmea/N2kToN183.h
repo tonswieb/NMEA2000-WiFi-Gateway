@@ -27,14 +27,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <NMEA0183.h>
 #include <NMEA2000.h>
 #include <functional>
+#include <util/Log.h>
 #include <prefs/N2KPreferences.h>
+
 #define MAX_NMEA0183_MESSAGE_SIZE 100
 
 //------------------------------------------------------------------------------
 class N2kToN183 : public tNMEA2000::tMsgHandler {
 
 private:
-  Stream* logger;
+  Logger* logger;
 
 public:
   using tSendNMEA0183MessageCallback=void (*)(const tNMEA0183Msg &NMEA0183Msg);
@@ -79,7 +81,7 @@ protected:
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
 
 public:
-  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs, Stream* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
+  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs, Logger* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
     _handler_func = handler_func;
     Latitude=N2kDoubleNA; Longitude=N2kDoubleNA; Altitude=N2kDoubleNA;
     Variation=N2kDoubleNA; Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;

@@ -3,11 +3,12 @@
 
 #include <HardwareSerial.h>
 #include <functional>
+#include <util/Log.h>
 
 class SuspendableHardwareSerial: public HardwareSerial {
 
 protected:
-    Stream *logger;
+    Logger *logger;
     bool initialized = false;
     //Let's start suspended until preferences are initialized
     bool suspended = true;
@@ -19,7 +20,7 @@ protected:
     unsigned long timeout_ms;
 
 public:
-    SuspendableHardwareSerial(int uart, Stream *logger);
+    SuspendableHardwareSerial(int uart, Logger *logger);
     void begin(unsigned long baud, uint32_t config=SERIAL_8N1, int8_t rxPin=-1, int8_t txPin=-1, bool invert=false, unsigned long timeout_ms = 20000UL);
     void suspend(bool value);
 };
