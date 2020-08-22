@@ -243,3 +243,13 @@ void N2KPreferences::setNmea200ReceiveFilter(const String nmea200ReceiveFilter) 
 const char * N2KPreferences::getNmea200ReceiveFilter() {
     return nmea200ReceiveFilter.c_str();
 }
+
+void N2KPreferences::setNmea2000Callback(std::function<void ()> callback) {
+    this->nmea2000Callback = callback;
+}
+
+void N2KPreferences::executeNmea2000Callback() {
+    if (nmea2000Callback) {
+        nmea2000Callback();
+    }
+}

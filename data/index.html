@@ -101,7 +101,8 @@
 <body onload="javascript:load()">
     <div class="tab">
         <button id='tabGeneral' class="tablinks" onclick="showTab(event, 'General')">General</button>
-        <button class="tablinks" onclick="showTab(event, 'NMEAStream')">NMEA Stream</button>
+        <button class="tablinks" onclick="showTab(event, 'NMEA0183')">NMEA 0183</button>
+        <button class="tablinks" onclick="showTab(event, 'NMEA2000')">NMEA 2000</button>
         <button class="tablinks" onclick="showTab(event, 'Bluetooth')">Bluetooth</button>
         <button class="tablinks" onclick="showTab(event, 'WIFI')">WIFI</button>
         <button class="tablinks" onclick="showTab(event, 'Console')">Console</button>
@@ -122,7 +123,7 @@
             <input type="button" value="Save Demo Settings" onclick="submitForm(this.form.name)"/>
         </form>
     </div>
-    <div id="NMEAStream" class="tabcontent">
+    <div id="NMEA0183" class="tabcontent">
         <form name="nmeaSettings">
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
@@ -146,9 +147,17 @@
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP"/><br>
             <label for="nmeaFilter">Filter</label>
             <input type="text" id="nmeaFilter" name="nmeaFilter"/><br>
+            <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
+        </form>
+        <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>
+    </div>
+    <div id="NMEA2000" class="tabcontent">
+        <form name="nmea2000Settings">
+            <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
+            <input type="hidden" id="nmea2000SettingsForm" name="nmeaSettingsForm" value="dummy" />
             <h2>NMEA 2000 Configuration:</h2>
-            <label for="nmea2000ToSerial">Log NMEA 2000 to Console</label>
-            <input type="checkbox" id="nmea2000ToSerial" name="nmea2000ToSerial"/><br>
+            <label for="n2kToSerial">Log NMEA 2000 to Console</label>
+            <input type="checkbox" id="n2kToSerial" name="n2kToSerial"/><br>
             <label for="nmea2000Mode">Mode</label>
             <select id="nmea2000Mode" name="nmea2000Mode">
                 <option value="0">Receive</option>
@@ -159,9 +168,8 @@
               </select>
             <label for="n2kRxFilter">Receive Filter</label>
             <input type="text" id="n2kRxFilter" name="n2kRxFilter"/><br>
-            <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
+            <input type="button" value="Save" onclick="submitForm(this.form.name)"/>
         </form>
-        <textarea id="nmeaStreamPrint" rows="10" cols="81" disabled="disabled"></textarea>
     </div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
@@ -237,7 +245,7 @@
                 setBoolean(json,"nmeaSrcN2k");
                 setBoolean(json,"nmeaSrcSerial1");
                 setBoolean(json,"nmeaSrcSerial2");
-                setBoolean(json,"nmea2000ToSerial");
+                setBoolean(json,"n2kToSerial");
                 setValue(json,"n2kRxFilter");
                 setListValue(json,"nmea2000Mode0","nmea2000Mode",0);
                 setListValue(json,"nmea2000Mode1","nmea2000Mode",1);

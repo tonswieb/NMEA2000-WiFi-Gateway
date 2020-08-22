@@ -37,15 +37,18 @@ public:
                 _prefs->setNmeaToSocket(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_SOCKET)));
                 _prefs->setNmeaToBluetooth(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_BL)));
                 _prefs->setNmeaToUDP(String("on").equals(server.arg(_prefs->PREF_NMEA_TO_UDP)));
-                _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
-                _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
                 _prefs->setNmeaSrcBlGPSEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_BL_GPS_ENABLED)));
                 _prefs->setNmeaSrcN2KEnabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_N2K_ENABLED)));
                 _prefs->setNmeaSrcSerial1Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL1_ENABLED)));
                 _prefs->setNmeaSrcSerial2Enabled(String("on").equals(server.arg(_prefs->PREF_NMEA_SRC_SERIAL2_ENABLED)));
                 _prefs->setNmeaFilter(server.arg(_prefs->PREF_NMEA_TO_FILTER));
-                _prefs->setNmea200ReceiveFilter(server.arg(_prefs->PREF_NMEA2000_RECEIVE_FILTER));
                 _prefs->executeCallbacks();
+                server.send(204);
+            } else if (requestUri.equals("/nmea2000Settings")) {
+                _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
+                _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
+                _prefs->setNmea200ReceiveFilter(server.arg(_prefs->PREF_NMEA2000_RECEIVE_FILTER));
+                _prefs->executeNmea2000Callback();
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
                 _prefs->setBlEnabled(String("on").equals(server.arg(_prefs->PREF_BLUETOOTH_ENABLED)));

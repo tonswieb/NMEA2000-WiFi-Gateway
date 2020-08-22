@@ -29,13 +29,12 @@ String printMode(tNMEA2000::tN2kMode _N2kMode) {
 //*****************************************************************************
 void InitNMEA2000(N2KPreferences *prefs, N2kToN183 *pN2kToN183, Stream *logger)
 {
-
   // List here messages your device will transmit.
   NMEA2000.SetN2kCANMsgBufSize(8);
   NMEA2000.SetN2kCANReceiveFrameBufSize(100);
   NMEA2000.SetForwardStream(logger);            // PC output on due native port
   NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text
-  NMEA2000.EnableForward(prefs->isNmeaToSerial());
+  NMEA2000.EnableForward(prefs->isNmea2000ToSerial());
   tNMEA2000::tN2kMode mode = prefs->getNmeaMode();
   logger->println(printMode(mode));
   NMEA2000.SetMode(mode);

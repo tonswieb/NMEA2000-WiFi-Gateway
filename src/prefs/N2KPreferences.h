@@ -54,6 +54,7 @@ private:
   std::function<void ()> callback;
   std::function<void (bool)> serial1Callback;
   std::function<void (bool)> serial2Callback;
+  std::function<void ()> nmea2000Callback;
 
 
   /**
@@ -157,6 +158,8 @@ public:
 
 
   //NMEA2000 Preferences
+  void setNmea2000Callback(std::function<void ()> callback);
+  void executeNmea2000Callback();
   void setNmea2000ToSerial(bool value);
   bool isNmea2000ToSerial();
   void setNmeaMode(tNMEA2000::tN2kMode value);
