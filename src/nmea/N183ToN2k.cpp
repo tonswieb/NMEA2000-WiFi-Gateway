@@ -34,6 +34,23 @@ double toMagnetic(double True, double Variation) {
   return magnetic;    
 }
 
+tETA calcETA(double dtw, double vmg, double localOffset) {
+
+  struct tETA eta;
+  
+  //Disable ETA when vmg is too small or missing
+  if (isnan(vmg) || isnan(dtw) || vmg < 0.01) {
+    eta.etaDays = ULONG_MAX;
+  } else {
+    //ETA in hours minus local time offset from GMT.
+    //B&G Triton2 applies the localtime offset to ETA / ETW.
+    double ETA = dtw / vmg - localOffset; 
+    eta.etaDays = ETA >= 24 ? ETA / 24 : 0;
+    eta.etaTime = round((ETA - eta.etaDays * 24) * 60 * 60);
+  }
+  return eta;
+}
+
 N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences* prefs, byte maxWpPerRoute, byte maxWpNameLength) {
 
   this->prefs = prefs;
@@ -98,15 +115,14 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
       int originID=0;
       int destinationID=originID+1;
       
-      //B&G Triton ignores the etaTime and etaDays values and does the calculation by itself. So let's leave them at 0 for now.
-      double etaTime, etaDays = 0.0;
+      struct tETA eta = calcETA(rmb.dtw,rmb.vmg,prefs->getLocalTimeOffset());
       double Mbtw = toMagnetic(rmb.btw,Variation);
       double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
       //PerpendicularCrossed not calculated yet.
       //Need to calculate it based on current lat/long, pND->bod.magBearing and pND->rmb.lat/long
       bool PerpendicularCrossed = false;
-      SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,PerpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,etaTime,etaDays,
+      SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,PerpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
                           MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,rmb.vmg);
       pNMEA2000->SendMsg(N2kMsg);
       trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f",

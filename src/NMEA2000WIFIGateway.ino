@@ -21,7 +21,9 @@
 #include "wifi/MulticastStream.h"
 #include "util/Hardware.h"
 
+#if defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL)
 HardwareSerial Serial(0);
+#endif
 WebServer webserver(80);
 WebSocketsServer webSocketServer = WebSocketsServer(8080);
 WebSocketStream webLog = WebSocketStream(&webSocketServer);
@@ -31,8 +33,10 @@ N2KPreferences prefs(&logger);
 WifiConnection wifiClient(&prefs,&logger);
 BluetoothSerial SerialBT;
 Bluetooth bluetooth(&SerialBT,&prefs,&logger);
+#if defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL)
 SuspendableHardwareSerial Serial1(1,&logger);
 SuspendableHardwareSerial Serial2(2,&logger);
+#endif
 Hardware hardware;
 
 StreamToN183 *pSerial1ToN183;
@@ -61,8 +65,10 @@ void setup()
   Serial1.begin(38400, SERIAL_8N1, ESP32_NMEA38400_RX, ESP32_NMEA38400_TX);
   Serial2.begin(4800, SERIAL_8N1, ESP32_NMEA4800_RX, ESP32_NMEA4800_TX);
   
+  #if defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL)
   prefs.setNmeaSrcSerial1Callback([](bool enable) {Serial1.suspend(!enable);});
   prefs.setNmeaSrcSerial2Callback([](bool enable) {Serial2.suspend(!enable);});
+  #endif
   prefs.setLogLevelCallBack([](int level) {logger.setLevel(level);});
   //Initialize callbacks before begin() so preferences are correctly initialized on all callbacks.
   prefs.begin();

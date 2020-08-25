@@ -28,6 +28,16 @@ Author: Timo Lappalainen, Ton Swieb
 #include <prefs/N2KPreferences.h>
 #include "Route.h"
 
+struct tETA {
+  //ETA is relative to GMT (UTC). At least at B&G Triton2.
+  //So need to apply a localtime offset in case the repeater is configured with a localtime offset as well.
+
+  //Nr of days to go. Use a max number to display --:-- on B&G Triton
+  unsigned long etaDays = ULONG_MAX;
+  //ETA Time is second sinds midnight in UTC. 
+  double etaTime = 0;
+};
+
 class N183ToN2k {
 
   private:  

@@ -87,6 +87,7 @@ public:
   const char *PREF_NMEA2000_TO_SERIAL = "n2kToSerial";
   const char *PREF_NMEA2000_MODE = "nmea2000Mode";
   const char *PREF_NMEA2000_RECEIVE_FILTER = "n2kRxFilter";
+  const char *PREF_NMEA2000_LOCALTIME_OFFSET = "n2kLTOffset";
   const char *PREF_NMEA_SRC_BL_GPS_ENABLED = "nmeaSrcBlGps";
   const char *PREF_NMEA_SRC_N2K_ENABLED = "nmeaSrcN2k";
   const char *PREF_NMEA_SRC_SERIAL1_ENABLED = "nmeaSrcSerial1";
@@ -164,6 +165,7 @@ public:
   bool isNmeaSrcSerial2Enabled();
   void setNmeaFilter(const String value);
   const char * getNmeaFilter();
+  float localtimeOffset;
 
 
   //NMEA2000 Preferences
@@ -175,6 +177,8 @@ public:
   tNMEA2000::tN2kMode getNmeaMode();
   void setNmea200ReceiveFilter(const String value);
   const char * getNmea200ReceiveFilter();
+  void setLocalTimeOffset(float value);
+  float getLocalTimeOffset();
 };
 
 #endif
