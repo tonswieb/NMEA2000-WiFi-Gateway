@@ -44,6 +44,7 @@ class N183ToN2k {
     unsigned long DaysSince1970;   // Days since 1970-01-01
     double Latitude, Longitude;
     double Variation = 0;
+    double xte = 0; //Keep track of the lat XTE value so we can calculate perpendicular crossed for PGN 129284
     //NMEA0183-BOD (Bearing Origin to Destination). Does not conatin enough information to send a NMEA200 message, but contains some elements required for a NMEA2000 message.
     tBOD bod;
     Route* route;
@@ -57,7 +58,7 @@ class N183ToN2k {
     void sendPGN129026(const tN2kHeadingReference ref, const double &COG, const double &SOG);
     void sendPGN129029(const tGGA &gga);
     void sendPGN129283(const tRMB &rmb);
-    void sendPGN129284(const tRMB &rmb);
+    void sendPGN129284(const tRMB &rmb, bool perpendicularCrossed);
     void sendPGN129285();
     void sendPGN129285(const tRMB &rmb);
 
@@ -71,6 +72,7 @@ class N183ToN2k {
     void HandleRTE(const tNMEA0183Msg &NMEA0183Msg);
     void HandleWPL(const tNMEA0183Msg &NMEA0183Msg);
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
+    
   
   public:
     N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);

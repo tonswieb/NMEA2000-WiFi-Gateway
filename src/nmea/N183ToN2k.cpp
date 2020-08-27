@@ -104,7 +104,7 @@ void N183ToN2k::sendPGN129283(const tRMB &rmb) {
  * It always takes the 2nd waypoint from PGN129285 as DestinationWaypoint.
  * Not sure if that is compliant with NMEA2000 or B&G Trition specific.
  */
-void N183ToN2k::sendPGN129284(const tRMB &rmb) {
+void N183ToN2k::sendPGN129284(const tRMB &rmb, bool perpendicularCrossed) {
   
       tN2kMsg N2kMsg;
 
@@ -119,10 +119,7 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
       double Mbtw = toMagnetic(rmb.btw,Variation);
       double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
-      //PerpendicularCrossed not calculated yet.
-      //Need to calculate it based on current lat/long, pND->bod.magBearing and pND->rmb.lat/long
-      bool PerpendicularCrossed = false;
-      SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,PerpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
+      SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
                           MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,rmb.vmg);
       pNMEA2000->SendMsg(N2kMsg);
       trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f",
@@ -255,8 +252,11 @@ void N183ToN2k::HandleRMB(const tNMEA0183Msg &NMEA0183Msg) {
 
   tRMB rmb;
   if (NMEA0183ParseRMB(NMEA0183Msg, rmb)  && rmb.status == 'A') {
+    //Calc perpendicularCrossed using the previous received xte and the current xte
+    bool perpendicularCrossed = (xte > 0 && rmb.xte < 0) || (xte < 0 && rmb.xte > 0);
+    xte = rmb.xte;
     sendPGN129283(rmb);
-    sendPGN129284(rmb);
+    sendPGN129284(rmb,perpendicularCrossed);
     sendPGN129285(rmb);
     trace("RMB: XTE=%6.2f, DTW=%6.2f, BTW=%6.2f, VMG=%6.2f, OriginID=%s, DestinationID=%s, Latittude=%6.2f, Longitude=%6.2f",
     rmb.xte,rmb.dtw,rmb.btw,rmb.vmg,rmb.originID,rmb.destID,rmb.latitude,rmb.longitude);
