@@ -34,19 +34,24 @@ double toMagnetic(double True, double Variation) {
   return magnetic;    
 }
 
-tETA calcETA(double dtw, double vmg, double localOffset) {
+/**
+ *  dtw in meters, vmg in meters/second
+ */
+tETA N183ToN2k::calcETA(double dtw, double vmg) {
 
   struct tETA eta;
   
-  //Disable ETA when vmg is too small or missing
+  //Disable ETA/TTG when vmg is too small or missing
   if (isnan(vmg) || isnan(dtw) || vmg < 0.01) {
     eta.etaDays = ULONG_MAX;
+    trace("Skip calculating ETA. Either VMG < 0.01 or VMG/DTW is missing.")
   } else {
-    //ETA in hours minus local time offset from GMT.
-    //B&G Triton2 applies the localtime offset to ETA / ETW.
-    double ETA = dtw / vmg - localOffset; 
-    eta.etaDays = ETA >= 24 ? ETA / 24 : 0;
-    eta.etaTime = round((ETA - eta.etaDays * 24) * 60 * 60);
+    //Time To Go (TTG) in seconds
+    double TTG = dtw / vmg;
+    //TODO: Convert TTG to ETA by adding GPS time and calculating etaDays as the next day and etaTime as the time on the current day or subsequent days
+    eta.etaDays = TTG / (3600.0 * 24.0);
+    eta.etaTime = TTG - eta.etaDays * 3600.0 * 24.0; //in seconds
+    trace("calcETA:TTG (seconds)=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",TTG,eta.etaTime,eta.etaDays);
   }
   return eta;
 }
@@ -115,15 +120,15 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb, bool perpendicularCrossed) {
       int originID=0;
       int destinationID=originID+1;
       
-      struct tETA eta = calcETA(rmb.dtw,rmb.vmg,prefs->getLocalTimeOffset());
+      struct tETA eta = calcETA(rmb.dtw,rmb.vmg);
       double Mbtw = toMagnetic(rmb.btw,Variation);
       double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
       SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
                           MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,rmb.vmg);
       pNMEA2000->SendMsg(N2kMsg);
-      trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f",
-      bod.originID,originID,bod.destID,destinationID,rmb.latitude,rmb.longitude,ArrivalCircleEntered,rmb.vmg,rmb.dtw,Mbtw,MbBod);
+      trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",
+      bod.originID,originID,bod.destID,destinationID,rmb.latitude,rmb.longitude,ArrivalCircleEntered,rmb.vmg,rmb.dtw,Mbtw,MbBod,eta.etaTime,eta.etaDays);
 }
 
 /**

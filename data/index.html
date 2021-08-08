@@ -176,8 +176,6 @@
             </select>
             <label for="n2kRxFilter">Receive Filter</label>
             <input type="text" id="n2kRxFilter" name="n2kRxFilter"/><br>
-            <label for="n2kLTOffset">Localtime offset</label>
-            <input type="text" id="n2kLTOffset" name="n2kLTOffset"/><br>
             <input type="button" value="Save" onclick="submitForm(this.form.name)"/>
         </form>
     </div>
@@ -258,7 +256,6 @@
                 setBoolean(json,"nmeaSrcSerial2");
                 setBoolean(json,"n2kToSerial");
                 setValue(json,"n2kRxFilter");
-                setValue(json,"n2kLTOffset");
                 setListValue(json,"nmea2000Mode");
                 setBoolean(json,"blEnabled");
                 setValue(json,"wifiUdpPort");

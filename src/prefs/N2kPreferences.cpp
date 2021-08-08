@@ -59,7 +59,6 @@ void N2KPreferences::init() {
     setNmea2000ToSerial(prefs.getBool(PREF_NMEA2000_TO_SERIAL,false));
     setNmeaMode((tNMEA2000::tN2kMode) prefs.getUChar(PREF_NMEA2000_MODE, tNMEA2000::N2km_ListenOnly));
     setNmea200ReceiveFilter(prefs.getString(PREF_NMEA2000_RECEIVE_FILTER, NMEA2000_RECEIVE_FILTER));
-    setLocalTimeOffset(prefs.getFloat(PREF_NMEA2000_LOCALTIME_OFFSET,2.0)); //Europe Summer Time
 }
 
 void N2KPreferences::reset() {
@@ -272,13 +271,4 @@ void N2KPreferences::executeNmea2000Callback() {
     if (nmea2000Callback) {
         nmea2000Callback();
     }
-}
-
-void N2KPreferences::setLocalTimeOffset(float value) {
-    prefs.putFloat(PREF_NMEA2000_LOCALTIME_OFFSET,value);
-    localtimeOffset = value;
-}
-
-float N2KPreferences::getLocalTimeOffset() {
-    return localtimeOffset;
 }

@@ -33,7 +33,7 @@ struct tETA {
   //So need to apply a localtime offset in case the repeater is configured with a localtime offset as well.
 
   //Nr of days to go. Use a max number to display --:-- on B&G Triton
-  unsigned long etaDays = ULONG_MAX;
+  long etaDays = LONG_MAX;
   //ETA Time is second sinds midnight in UTC. 
   double etaTime = 0;
 };
@@ -73,6 +73,7 @@ class N183ToN2k {
     void HandleWPL(const tNMEA0183Msg &NMEA0183Msg);
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
     
+    tETA calcETA(double dtw, double vmg);
   
   public:
     N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);

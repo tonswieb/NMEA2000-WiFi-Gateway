@@ -52,7 +52,6 @@ public:
                 _prefs->setNmea2000ToSerial(String("on").equals(server.arg(_prefs->PREF_NMEA2000_TO_SERIAL)));
                 _prefs->setNmeaMode((tNMEA2000::tN2kMode) server.arg(_prefs->PREF_NMEA2000_MODE).toInt());
                 _prefs->setNmea200ReceiveFilter(server.arg(_prefs->PREF_NMEA2000_RECEIVE_FILTER));
-                _prefs->setLocalTimeOffset(server.arg(_prefs->PREF_LOG_LEVEL).toFloat());
                 _prefs->executeNmea2000Callback();
                 server.send(204);
             } else if (requestUri.equals("/bluetoothSettings")) {
@@ -102,7 +101,6 @@ public:
                 doc[_prefs->PREF_NMEA_TO_FILTER] =  _prefs->getNmeaFilter();
                 doc[_prefs->PREF_NMEA2000_RECEIVE_FILTER] =  _prefs->getNmea200ReceiveFilter();
                 doc[_prefs->PREF_NMEA2000_MODE] =  _prefs->getNmeaMode();
-                doc[_prefs->PREF_NMEA2000_LOCALTIME_OFFSET] = _prefs->getLocalTimeOffset();
                 char buffer[600];
                 serializeJson(doc, buffer);
                 server.send(200,"application/json",buffer);
