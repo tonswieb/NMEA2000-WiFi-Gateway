@@ -11,6 +11,7 @@
 #include "nmea/N2kToN183.h"
 #include "nmea/StreamToN183.h"
 #include "nmea/N183ToN2k.h"
+#include "nmea/Gps.h"
 #include "nmea/demo/demo.h"
 #include "prefs/N2KPreferences.h"
 #include "prefs/PreferenceRequestHandler.h"
@@ -38,6 +39,7 @@ SuspendableHardwareSerial Serial1(1,&logger);
 SuspendableHardwareSerial Serial2(2,&logger);
 #endif
 Hardware hardware;
+Gps gps;
 
 StreamToN183 *pSerial1ToN183;
 StreamToN183 *pSerialBtToN183;
@@ -83,9 +85,9 @@ void setup()
   pSerial1ToN183 = new StreamToN183(&Serial1, nmea0183MessageHandler);
   pSerialBtToN183 = new StreamToN183(&SerialBT, nmea0183MessageHandler);
   //TODO: Add multicast to send Serial2 to NNMEA-0183 receivers as well and not only to N2K
-  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &Serial2, &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pUdpToN2k =  new N183ToN2k(&NMEA2000, wifiClient.getUdpPackageStream(), &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
-  pN2kToN183 = new N2kToN183(&NMEA2000, nmea0183MessageHandler,&prefs, &logger);
+  pSerial2ToN2k =  new N183ToN2k(&NMEA2000, &gps, &Serial2, &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pUdpToN2k =  new N183ToN2k(&NMEA2000, &gps, wifiClient.getUdpPackageStream(), &logger, &prefs, MAX_WP_PER_ROUTE,MAX_WP_NAME_LENGTH);
+  pN2kToN183 = new N2kToN183(&NMEA2000, &gps, nmea0183MessageHandler,&prefs, &logger);
   InitNMEA2000(&prefs,pN2kToN183, &logger);
   prefs.setNmea2000Callback([]() {InitNMEA2000(&prefs,pN2kToN183, &logger);});
   prefs.freeEntries();

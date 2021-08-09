@@ -93,8 +93,7 @@ void N2kToN183::Update()
   }
   if (LastPositionTime + 4000 < millis())
   {
-    Latitude = N2kDoubleNA;
-    Longitude = N2kDoubleNA;
+    gps->setLatLong(N2kDoubleNA,N2kDoubleNA);
   }
   if (LastWindTime + 2000 < millis())
   {
@@ -120,9 +119,13 @@ void N2kToN183::HandleSystemTime(const tN2kMsg &N2kMsg)
   unsigned char SID;
   tN2kTimeSource TimeSource;
   tNMEA0183Msg NMEA0183Msg;
+  uint16_t DaysSince1970;
+  double SecondsSinceMidnight;
 
   if (ParseN2kSystemTime(N2kMsg, SID, DaysSince1970, SecondsSinceMidnight, TimeSource))
   {
+    gps->setDaysSince1970(DaysSince1970);
+    gps->setSecondsSinceMidnight(SecondsSinceMidnight);
     LastSystemTime = millis();
     //TODO: Use NMEA0183 message to send date/time
   }
@@ -151,15 +154,15 @@ void N2kToN183::HandleHeading(const tN2kMsg &N2kMsg)
   unsigned char SID;
   tN2kHeadingReference ref;
   double _Deviation = 0;
-  double _Variation;
+  double Variation;
   tNMEA0183Msg NMEA0183Msg;
 
-  if (ParseN2kHeading(N2kMsg, SID, Heading, _Deviation, _Variation, ref))
+  if (ParseN2kHeading(N2kMsg, SID, Heading, _Deviation, Variation, ref))
   {
     if (ref == N2khr_magnetic)
     {
-      if (!N2kIsNA(_Variation))
-        Variation = _Variation; // Update Variation
+      if (!N2kIsNA(Variation))
+        gps->setVariation(Variation); // Update Variation
       if (!N2kIsNA(Heading) && !N2kIsNA(Variation))
         Heading -= Variation;
     }
@@ -176,8 +179,13 @@ void N2kToN183::HandleVariation(const tN2kMsg &N2kMsg)
 {
   unsigned char SID;
   tN2kMagneticVariation Source;
+  uint16_t DaysSince1970;
+  double Variation;
 
-  ParseN2kMagneticVariation(N2kMsg, SID, Source, DaysSince1970, Variation);
+  if (ParseN2kMagneticVariation(N2kMsg, SID, Source, DaysSince1970, Variation)) {
+    gps->setDaysSince1970(DaysSince1970);
+    gps->setVariation(Variation);
+  }
 }
 
 //*****************************************************************************
@@ -191,6 +199,7 @@ void N2kToN183::HandleBoatSpeed(const tN2kMsg &N2kMsg)
   if (ParseN2kBoatSpeed(N2kMsg, SID, WaterReferenced, GroundReferenced, SWRT))
   {
     tNMEA0183Msg NMEA0183Msg;
+    double Variation = gps->getVariation();
     double MagneticHeading = (!N2kIsNA(Heading) && !N2kIsNA(Variation) ? Heading + Variation : NMEA0183DoubleNA);
     if (NMEA0183SetVHW(NMEA0183Msg, Heading, MagneticHeading, WaterReferenced))
     {
@@ -225,11 +234,14 @@ void N2kToN183::HandleDepth(const tN2kMsg &N2kMsg)
 void N2kToN183::HandlePosition(const tN2kMsg &N2kMsg)
 {
 
-  if (ParseN2kPGN129025(N2kMsg, Latitude, Longitude))
+  double latitude; 
+  double longitude;
+  if (ParseN2kPGN129025(N2kMsg, latitude, longitude))
   {
+    gps->setLatLong(latitude,longitude);
     LastPositionTime = millis();
     tNMEA0183Msg NMEA0183Msg;
-    if (NMEA0183SetGLL(NMEA0183Msg, SecondsSinceMidnight, Latitude, Longitude))
+    if (NMEA0183SetGLL(NMEA0183Msg, gps->getSecondsSinceMidnight(), latitude, longitude))
     {
       SendMessage(NMEA0183Msg);
     }
@@ -246,6 +258,7 @@ void N2kToN183::HandleCOGSOG(const tN2kMsg &N2kMsg)
   if (ParseN2kCOGSOGRapid(N2kMsg, SID, HeadingReference, COG, SOG))
   {
     LastCOGSOGTime = millis();
+    double Variation = gps->getVariation();
     double MCOG = (!N2kIsNA(COG) && !N2kIsNA(Variation) ? COG - Variation : NMEA0183DoubleNA);
     if (HeadingReference == N2khr_magnetic)
     {
@@ -274,11 +287,18 @@ void N2kToN183::HandleGNSS(const tN2kMsg &N2kMsg)
   tN2kGNSStype ReferenceStationType;
   uint16_t ReferenceSationID;
   double AgeOfCorrection;
+  double Latitude;
+  double Longitude;
+  uint16_t DaysSince1970;
+  double SecondsSinceMidnight;
 
   if (ParseN2kGNSS(N2kMsg, SID, DaysSince1970, SecondsSinceMidnight, Latitude, Longitude, Altitude, GNSStype, GNSSmethod,
                    nSatellites, HDOP, PDOP, GeoidalSeparation,
                    nReferenceStations, ReferenceStationType, ReferenceSationID, AgeOfCorrection))
   {
+    gps->setLatLong(Latitude,Longitude);
+    gps->setDaysSince1970(DaysSince1970);
+    gps->setSecondsSinceMidnight(SecondsSinceMidnight);
     LastPositionTime = millis();
     tNMEA0183Msg NMEA0183Msg;
     if (NMEA0183SetGGA(NMEA0183Msg, SecondsSinceMidnight, Latitude, Longitude, 1, nSatellites, HDOP, Altitude, GeoidalSeparation, AgeOfCorrection, ReferenceSationID))
@@ -312,10 +332,10 @@ void N2kToN183::HandleWind(const tN2kMsg &N2kMsg)
 //*****************************************************************************
 void N2kToN183::SendRMC()
 {
-  if (NextRMCSend <= millis() && !N2kIsNA(Latitude))
+  if (NextRMCSend <= millis() && !N2kIsNA(gps->getLatitude()))
   {
     tNMEA0183Msg NMEA0183Msg;
-    if (NMEA0183SetRMC(NMEA0183Msg, SecondsSinceMidnight, Latitude, Longitude, COG, SOG, DaysSince1970, Variation))
+    if (NMEA0183SetRMC(NMEA0183Msg, gps->getSecondsSinceMidnight(), gps->getLatitude(), gps->getLongitude(), COG, SOG, gps->getDaysSince1970(), gps->getVariation()))
     {
       SendMessage(NMEA0183Msg);
     }

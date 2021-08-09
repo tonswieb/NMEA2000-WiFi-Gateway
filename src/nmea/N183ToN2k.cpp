@@ -48,19 +48,21 @@ tETA N183ToN2k::calcETA(double dtw, double vmg) {
   } else {
     //Time To Go (TTG) in seconds
     double TTG = dtw / vmg;
-    //TODO: Convert TTG to ETA by adding GPS time and calculating etaDays as the next day and etaTime as the time on the current day or subsequent days
-    eta.etaDays = TTG / (3600.0 * 24.0);
-    eta.etaTime = TTG - eta.etaDays * 3600.0 * 24.0; //in seconds
-    trace("calcETA:TTG (seconds)=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",TTG,eta.etaTime,eta.etaDays);
+    double GPSTime = gps->getSecondsSinceMidnight();
+    double ETA = TTG + GPSTime;
+    eta.etaDays = ETA / (3600 * 24);
+    eta.etaTime = ETA - eta.etaDays * 3600 * 24; //in seconds
+    trace("calcETA: GPSTime (seconds)=%6.2f, TTG (seconds)=%6.2f, ETA=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",GPSTime,TTG,ETA,eta.etaTime,eta.etaDays);
   }
   return eta;
 }
 
-N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences* prefs, byte maxWpPerRoute, byte maxWpNameLength) {
+N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Gps *gps, Stream* nmea0183, Logger* logger, N2KPreferences* prefs, byte maxWpPerRoute, byte maxWpNameLength) {
 
   this->prefs = prefs;
   this->logger = logger;
   this->pNMEA2000 = pNMEA2000;
+  this->gps = gps;
   route = new Route(maxWpPerRoute, maxWpNameLength, logger);
   info("Initializing NMEA0183 communication. Make sure the NMEA device uses the same baudrate.");
   NMEA0183.SetMessageStream(nmea0183);
@@ -121,6 +123,7 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb, bool perpendicularCrossed) {
       int destinationID=originID+1;
       
       struct tETA eta = calcETA(rmb.dtw,rmb.vmg);
+      double Variation = gps->getVariation();
       double Mbtw = toMagnetic(rmb.btw,Variation);
       double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
@@ -154,10 +157,13 @@ void N183ToN2k::sendPGN129285() {
    * For NMEA2000 the destination needs to be 2nd waypoint in the route. So lets at the current location as the 1st waypoint in the route.
    */   
   if (route->getSize() == 1) {
+    //TODO: Check if lat/lon is valid before trying to send N2K message
+    double Latitude = gps->getLatitude();
+    double Longitude = gps->getLongitude();
     AppendN2kPGN129285(N2kMsg, 0, "CURRENT", Latitude, Longitude);
     tRouteWaypoint e = route->getWaypoint(0);
     AppendN2kPGN129285(N2kMsg, 1, e.name, e.latitude, e.longitude);
-    trace("129285: CURRENT,%6.2f,%6.2f",Latitude,Longitude);
+    trace("129285: CURRENT,%6.2f,%6.2f", Latitude, Longitude);
     trace("129285: %s,%6.2f,%6.2f",e.name,e.latitude,e.longitude);
   } else {
     for (byte i=route->getIndexOriginCurrentLeg(); i < route->getSize(); i++) {
@@ -189,6 +195,9 @@ void N183ToN2k::sendPGN129285() {
 void N183ToN2k::sendPGN129285(const tRMB &rmb) {
 
   tN2kMsg N2kMsg;
+  //TODO: Check if lat/lon is valid before trying to send N2K message
+  double Latitude = gps->getLatitude(); 
+  double Longitude = gps->getLongitude();
   SetN2kPGN129285(N2kMsg,0, 1, '1', false, false, "Unknown");
   AppendN2kPGN129285(N2kMsg, 0, "CURRENT", Latitude, Longitude);
   AppendN2kPGN129285(N2kMsg, 1, "NEXT", rmb.latitude, rmb.longitude);
@@ -201,7 +210,7 @@ void N183ToN2k::sendPGN129285(const tRMB &rmb) {
 void N183ToN2k::sendPGN129029(const tGGA &gga) {
   
     tN2kMsg N2kMsg;
-    SetN2kGNSS(N2kMsg,1,DaysSince1970,gga.GPSTime,gga.latitude,gga.longitude,gga.altitude,
+    SetN2kGNSS(N2kMsg,1,gps->getDaysSince1970(),gga.GPSTime,gga.latitude,gga.longitude,gga.altitude,
               N2kGNSSt_GPS,GNSMethofNMEA0183ToN2k(gga.GPSQualityIndicator),gga.satelliteCount,gga.HDOP,0,
               gga.geoidalSeparation,1,N2kGNSSt_GPS,gga.DGPSReferenceStationID,gga.DGPSAge
               );
@@ -225,6 +234,7 @@ void N183ToN2k::sendPGN129026(const tN2kHeadingReference ref, const double &COG,
 void N183ToN2k::sendPGN127250(const double &trueHeading) {
 
     tN2kMsg N2kMsg;
+    double Variation = gps->getVariation();
     double MHeading = toMagnetic(trueHeading,Variation);
     SetN2kMagneticHeading(N2kMsg,1,MHeading,0,Variation);
     pNMEA2000->SendMsg(N2kMsg);
@@ -239,10 +249,10 @@ void N183ToN2k::HandleRMC(const tNMEA0183Msg &NMEA0183Msg) {
     double MCOG = toMagnetic(rmc.trueCOG,rmc.variation);
     sendPGN129026(N2khr_magnetic,MCOG,rmc.SOG);
     sendPGN129025(rmc.latitude,rmc.longitude);
-    Latitude = rmc.latitude;
-    Longitude = rmc.longitude;
-    DaysSince1970 = rmc.daysSince1970;
-    Variation = rmc.variation;
+    gps->setLatLong(rmc.latitude,rmc.longitude);
+    gps->setDaysSince1970(rmc.daysSince1970);
+    gps->setVariation(rmc.variation);
+    gps->setSecondsSinceMidnight(rmc.GPSTime);
     trace("RMC: GPSTime=%6.2f, Latitude=%6.2f, Longitude=%6.2f, COG=%6.2f, SOG=%6.2f, DaysSince1970=%u, Variation=%6.2f",
     rmc.GPSTime,rmc.latitude,rmc.longitude,rmc.trueCOG,rmc.SOG,rmc.daysSince1970,rmc.variation);
   } else if (rmc.status == 'V') { warn("RMC: Is Void");
@@ -274,8 +284,8 @@ void N183ToN2k::HandleGGA(const tNMEA0183Msg &NMEA0183Msg) {
   tGGA gga;
   if (NMEA0183ParseGGA(NMEA0183Msg,gga) && gga.GPSQualityIndicator > 0) {
     sendPGN129029(gga);
-    Latitude = gga.latitude;
-    Longitude = gga.longitude;
+    gps->setLatLong(gga.latitude,gga.longitude);
+    gps->setSecondsSinceMidnight(gga.GPSTime);
     trace("GGA: Time=%6.2f, Latitude=%6.2f, Longitude=%6.2f, Altitude=%6.2f, GPSQualityIndicator=%u, SatelliteCount=%u, HDOP=%6.2f, GeoidalSeparation=%6.2f, DGPSAge=%6.2f, DGPSReferenceStationID=%u",
     gga.GPSTime,gga.latitude,gga.longitude,gga.altitude,gga.GPSQualityIndicator,gga.satelliteCount,gga.HDOP,gga.geoidalSeparation,gga.DGPSAge,gga.DGPSReferenceStationID);
   } else if (gga.GPSQualityIndicator == 0) { warn("GGA: Invalid GPS fix.");
@@ -287,8 +297,8 @@ void N183ToN2k::HandleGLL(const tNMEA0183Msg &NMEA0183Msg) {
   tGLL gll;
   if (NMEA0183ParseGLL(NMEA0183Msg,gll) && gll.status == 'A') {
     sendPGN129025(gll.latitude,gll.longitude);
-    Latitude = gll.latitude;
-    Longitude = gll.longitude;
+    gps->setLatLong(gll.latitude,gll.longitude);
+    gps->setSecondsSinceMidnight(gll.GPSTime);
     trace("GLL: Time=%6.2f, Latitude=%6.2f, Longitude=%6.2f",gll.GPSTime,gll.latitude,gll.longitude,6,2);
   } else if (gll.status == 'V') { warn("GLL: Is  Void");
   } else { error("GLL: Failed to parse message"); }
@@ -307,7 +317,7 @@ void N183ToN2k::HandleVTG(const tNMEA0183Msg &NMEA0183Msg) {
  double MagneticCOG, COG, SOG;
   
   if (NMEA0183ParseVTG(NMEA0183Msg,COG,MagneticCOG,SOG)) {
-    Variation=COG-MagneticCOG; // Save variation for Magnetic heading
+    gps->setVariation(COG-MagneticCOG); // Save variation for Magnetic heading
     sendPGN129026(N2khr_true,COG,SOG);
     trace("VTG: COG=%6.2f",COG);
   } else { error("VTG: Failed to parse message"); }

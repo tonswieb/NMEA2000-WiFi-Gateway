@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <functional>
 #include <util/Log.h>
 #include <prefs/N2KPreferences.h>
+#include "nmea/Gps.h"
 
 #define MAX_NMEA0183_MESSAGE_SIZE 100
 
@@ -43,10 +44,7 @@ public:
     
 protected:
   static const unsigned long RMCPeriod=1000;
-  double Latitude;
-  double Longitude;
   double Altitude;
-  double Variation;
   double Heading;
   double COG;
   double SOG;
@@ -58,9 +56,8 @@ protected:
   unsigned long LastPosSend;
   unsigned long LastWindTime;
   unsigned long LastSystemTime;
-  uint16_t DaysSince1970;
-  double SecondsSinceMidnight;
   unsigned long NextRMCSend;
+  Gps *gps;
 
   std::function<void (char*)> _handler_func;
   N2KPreferences *prefs;
@@ -81,11 +78,14 @@ protected:
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
 
 public:
-  N2kToN183(tNMEA2000 *_pNMEA2000, std::function<void (char*)> handler_func, N2KPreferences *prefs, Logger* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
+  N2kToN183(tNMEA2000 *_pNMEA2000, Gps *gps, std::function<void (char*)> handler_func, N2KPreferences *prefs, Logger* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
     _handler_func = handler_func;
-    Latitude=N2kDoubleNA; Longitude=N2kDoubleNA; Altitude=N2kDoubleNA;
-    Variation=N2kDoubleNA; Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
-    SecondsSinceMidnight=N2kDoubleNA; DaysSince1970=N2kUInt16NA;
+    Altitude=N2kDoubleNA;
+    //TODO: Move initialization and reset to Gps class without introducing dependency on NMEA2000. Requires refactoring N2kIsNaN.
+    gps->setLatLong(N2kDoubleNA,N2kDoubleNA);
+    gps->setVariation(N2kDoubleNA);
+    gps->setDaysSince1970(N2kUInt16NA);
+    Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
     LastPosSend=0;
     NextRMCSend=millis()+RMCPeriod;
     LastHeadingTime=0;
@@ -95,6 +95,7 @@ public:
     LastSystemTime=0;
     this->prefs = prefs;
     this->logger = logger;
+    this->gps = gps;
   }
   void HandleMsg(const tN2kMsg &N2kMsg);
   void Update();

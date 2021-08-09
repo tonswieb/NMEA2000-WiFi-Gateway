@@ -27,6 +27,7 @@ Author: Timo Lappalainen, Ton Swieb
 #include "util/Log.h"
 #include <prefs/N2KPreferences.h>
 #include "Route.h"
+#include "nmea/Gps.h"
 
 struct tETA {
   //ETA is relative to GMT (UTC). At least at B&G Triton2.
@@ -41,9 +42,7 @@ struct tETA {
 class N183ToN2k {
 
   private:  
-    unsigned long DaysSince1970;   // Days since 1970-01-01
-    double Latitude, Longitude;
-    double Variation = 0;
+    Gps *gps;
     double xte = 0; //Keep track of the lat XTE value so we can calculate perpendicular crossed for PGN 129284
     //NMEA0183-BOD (Bearing Origin to Destination). Does not conatin enough information to send a NMEA200 message, but contains some elements required for a NMEA2000 message.
     tBOD bod;
@@ -76,7 +75,7 @@ class N183ToN2k {
     tETA calcETA(double dtw, double vmg);
   
   public:
-    N183ToN2k(tNMEA2000* pNMEA2000, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
+    N183ToN2k(tNMEA2000* pNMEA2000, Gps *gps, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);
     void handleLoop();
 };
 
