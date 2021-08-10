@@ -73,6 +73,7 @@ class N183ToN2k {
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
     
     tETA calcETA(double dtw, double vmg);
+    double calcVmc(double btw);
   
   public:
     N183ToN2k(tNMEA2000* pNMEA2000, Gps *gps, Stream* nmea0183, Logger* logger, N2KPreferences *prefs, byte maxWpPerRoute = MAX_WP_PER_ROUTE, byte maxWpNameLength = MAX_WP_NAME_LENGTH);

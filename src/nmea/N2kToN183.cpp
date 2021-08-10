@@ -95,11 +95,6 @@ void N2kToN183::Update()
   {
     gps->setLatLong(N2kDoubleNA,N2kDoubleNA);
   }
-  if (LastWindTime + 2000 < millis())
-  {
-    WindSpeed = N2kDoubleNA;
-    WindAngle = N2kDoubleNA;
-  }
 }
 
 //*****************************************************************************
@@ -292,6 +287,7 @@ void N2kToN183::HandleGNSS(const tN2kMsg &N2kMsg)
   tN2kGNSStype ReferenceStationType;
   uint16_t ReferenceSationID;
   double AgeOfCorrection;
+  double Altitude;
   double Latitude;
   double Longitude;
   uint16_t DaysSince1970;
@@ -316,6 +312,8 @@ void N2kToN183::HandleGNSS(const tN2kMsg &N2kMsg)
 //*****************************************************************************
 void N2kToN183::HandleWind(const tN2kMsg &N2kMsg)
 {
+  double WindSpeed;
+  double WindAngle;
   unsigned char SID;
   tN2kWindReference WindReference;
   tNMEA0183WindReference NMEA0183Reference = NMEA0183Wind_True;
@@ -323,7 +321,6 @@ void N2kToN183::HandleWind(const tN2kMsg &N2kMsg)
   if (ParseN2kWindSpeed(N2kMsg, SID, WindSpeed, WindAngle, WindReference))
   {
     tNMEA0183Msg NMEA0183Msg;
-    LastWindTime = millis();
     if (WindReference == N2kWind_Apparent)
       NMEA0183Reference = NMEA0183Wind_Apparent;
 

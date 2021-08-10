@@ -35,7 +35,7 @@ double toMagnetic(double True, double Variation) {
   return magnetic;    
 }
 
-double calcVmc(double btw) {
+double N183ToN2k::calcVmc(double btw) {
 
   double cog = gps->getCOG();
   double sog = gps->getSOG();

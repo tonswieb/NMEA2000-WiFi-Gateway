@@ -44,15 +44,11 @@ public:
     
 protected:
   static const unsigned long RMCPeriod=1000;
-  double Altitude;
   double Heading;
-  double WindSpeed;
-  double WindAngle;
   unsigned long LastHeadingTime;
   unsigned long LastCOGSOGTime;
   unsigned long LastPositionTime;
   unsigned long LastPosSend;
-  unsigned long LastWindTime;
   unsigned long LastSystemTime;
   unsigned long NextRMCSend;
   Gps *gps;
@@ -78,7 +74,6 @@ protected:
 public:
   N2kToN183(tNMEA2000 *_pNMEA2000, Gps *gps, std::function<void (char*)> handler_func, N2KPreferences *prefs, Logger* logger) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
     _handler_func = handler_func;
-    Altitude=N2kDoubleNA;
     //TODO: Move initialization and reset to Gps class without introducing dependency on NMEA2000. Requires refactoring N2kIsNaN.
     gps->setLatLong(N2kDoubleNA,N2kDoubleNA);
     gps->setVariation(N2kDoubleNA);
@@ -91,7 +86,6 @@ public:
     LastHeadingTime=0;
     LastCOGSOGTime=0;
     LastPositionTime=0;
-    LastWindTime=0;
     LastSystemTime=0;
     this->prefs = prefs;
     this->logger = logger;
