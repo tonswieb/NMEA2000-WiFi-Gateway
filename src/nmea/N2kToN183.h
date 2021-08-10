@@ -46,8 +46,6 @@ protected:
   static const unsigned long RMCPeriod=1000;
   double Altitude;
   double Heading;
-  double COG;
-  double SOG;
   double WindSpeed;
   double WindAngle;
   unsigned long LastHeadingTime;
@@ -85,7 +83,9 @@ public:
     gps->setLatLong(N2kDoubleNA,N2kDoubleNA);
     gps->setVariation(N2kDoubleNA);
     gps->setDaysSince1970(N2kUInt16NA);
-    Heading=N2kDoubleNA; COG=N2kDoubleNA; SOG=N2kDoubleNA;
+    gps->setCOG(N2kDoubleNA);
+    gps->setSOG(N2kDoubleNA);
+    Heading=N2kDoubleNA;
     LastPosSend=0;
     NextRMCSend=millis()+RMCPeriod;
     LastHeadingTime=0;

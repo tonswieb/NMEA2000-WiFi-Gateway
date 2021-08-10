@@ -19,6 +19,8 @@ protected:
   double secondsSinceMidnight = NAN;
   double variation = NAN;
   unsigned long lastPositionTime = 0;
+  double cog = NAN;
+  double sog = NAN;
 
 public:
   bool isValid();
@@ -31,6 +33,13 @@ public:
   unsigned long getDaysSince1970();
   void setSecondsSinceMidnight(double secondsSinceMidnight);
   double getSecondsSinceMidnight();
+  double getSOG();
+  void setSOG(double sog);
+  /**
+   * true COG
+   */
+  double getCOG();
+  void setCOG(double cog);
 };
 
 #endif

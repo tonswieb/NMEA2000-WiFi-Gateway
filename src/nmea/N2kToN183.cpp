@@ -88,8 +88,8 @@ void N2kToN183::Update()
     Heading = N2kDoubleNA;
   if (LastCOGSOGTime + 2000 < millis())
   {
-    COG = N2kDoubleNA;
-    SOG = N2kDoubleNA;
+    gps->setCOG(N2kDoubleNA);
+    gps->setSOG(N2kDoubleNA);
   }
   if (LastPositionTime + 4000 < millis())
   {
@@ -254,18 +254,23 @@ void N2kToN183::HandleCOGSOG(const tN2kMsg &N2kMsg)
   unsigned char SID;
   tN2kHeadingReference HeadingReference;
   tNMEA0183Msg NMEA0183Msg;
+  double COG;
+  double SOG;
 
   if (ParseN2kCOGSOGRapid(N2kMsg, SID, HeadingReference, COG, SOG))
   {
+    gps->setSOG(SOG);
     LastCOGSOGTime = millis();
     double Variation = gps->getVariation();
     double MCOG = (!N2kIsNA(COG) && !N2kIsNA(Variation) ? COG - Variation : NMEA0183DoubleNA);
     if (HeadingReference == N2khr_magnetic)
     {
       MCOG = COG;
-      if (!N2kIsNA(Variation))
+      if (!N2kIsNA(Variation)) {
         COG -= Variation;
+      }      
     }
+    gps->setCOG(COG);
     if (NMEA0183SetVTG(NMEA0183Msg, COG, MCOG, SOG))
     {
       SendMessage(NMEA0183Msg);
@@ -335,7 +340,7 @@ void N2kToN183::SendRMC()
   if (NextRMCSend <= millis() && !N2kIsNA(gps->getLatitude()))
   {
     tNMEA0183Msg NMEA0183Msg;
-    if (NMEA0183SetRMC(NMEA0183Msg, gps->getSecondsSinceMidnight(), gps->getLatitude(), gps->getLongitude(), COG, SOG, gps->getDaysSince1970(), gps->getVariation()))
+    if (NMEA0183SetRMC(NMEA0183Msg, gps->getSecondsSinceMidnight(), gps->getLatitude(), gps->getLongitude(), gps->getCOG(), gps->getSOG(), gps->getDaysSince1970(), gps->getVariation()))
     {
       SendMessage(NMEA0183Msg);
     }

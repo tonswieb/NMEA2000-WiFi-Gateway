@@ -249,6 +249,8 @@ void N183ToN2k::HandleRMC(const tNMEA0183Msg &NMEA0183Msg) {
     double MCOG = toMagnetic(rmc.trueCOG,rmc.variation);
     sendPGN129026(N2khr_magnetic,MCOG,rmc.SOG);
     sendPGN129025(rmc.latitude,rmc.longitude);
+    gps->setCOG(rmc.trueCOG);
+    gps->setSOG(rmc.SOG);
     gps->setLatLong(rmc.latitude,rmc.longitude);
     gps->setDaysSince1970(rmc.daysSince1970);
     gps->setVariation(rmc.variation);
@@ -317,6 +319,8 @@ void N183ToN2k::HandleVTG(const tNMEA0183Msg &NMEA0183Msg) {
  double MagneticCOG, COG, SOG;
   
   if (NMEA0183ParseVTG(NMEA0183Msg,COG,MagneticCOG,SOG)) {
+    gps->setCOG(COG);
+    gps->setSOG(SOG);
     gps->setVariation(COG-MagneticCOG); // Save variation for Magnetic heading
     sendPGN129026(N2khr_true,COG,SOG);
     trace("VTG: COG=%6.2f",COG);

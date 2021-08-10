@@ -41,3 +41,19 @@
   double Gps::getSecondsSinceMidnight() {
       return secondsSinceMidnight;
   }
+
+  double Gps::getSOG() {
+      return sog;
+  }
+
+  void Gps::setSOG(double sog) {
+      this->sog = sog;
+  }
+
+  double Gps::getCOG() {
+      return cog;
+  }
+
+  void Gps::setCOG(double cog) {
+      this->cog = cog;
+  }
