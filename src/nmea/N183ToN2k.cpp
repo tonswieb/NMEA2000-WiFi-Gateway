@@ -14,6 +14,7 @@ Author: Timo Lappalainen, Ton Swieb
 */
  
 #include "N183ToN2k.h"
+#include <math.h>
 
 #define PI_2 6.283185307179586476925286766559
 
@@ -34,20 +35,29 @@ double toMagnetic(double True, double Variation) {
   return magnetic;    
 }
 
+double calcVmc(double btw) {
+
+  double cog = gps->getCOG();
+  double sog = gps->getSOG();
+  if (isnan(sog) || isnan(cog) || sog < 0.01) {
+    return NAN;
+  }
+  return sog * cos(btw - cog); //Velocity Made good on Course
+}
+
 /**
- *  dtw in meters, vmg in meters/second
+ *  dtw in meters, vmc in meters/second
  */
-tETA N183ToN2k::calcETA(double dtw, double vmg) {
+tETA N183ToN2k::calcETA(double dtw, double vmc) {
 
   struct tETA eta;
   
   //Disable ETA/TTG when vmg is too small or missing
-  if (isnan(vmg) || isnan(dtw) || vmg < 0.01) {
+  if (isnan(vmc) || isnan(dtw) || vmc < 0.01) {
     eta.etaDays = ULONG_MAX;
-    trace("Skip calculating ETA. Either VMG < 0.01 or VMG/DTW is missing.")
+    trace("Skip calculating ETA. VMC < 0.01 or VMC/DTW is missing.")
   } else {
-    //Time To Go (TTG) in seconds
-    double TTG = dtw / vmg;
+    double TTG = dtw / vmc;
     double GPSTime = gps->getSecondsSinceMidnight();
     double ETA = TTG + GPSTime;
     eta.etaDays = ETA / (3600 * 24);
@@ -122,13 +132,16 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb, bool perpendicularCrossed) {
       int originID=0;
       int destinationID=originID+1;
       
-      struct tETA eta = calcETA(rmb.dtw,rmb.vmg);
+      //iSailor omits VMG in RMB message. NMEA0183 library initiallizes missing doubles to 0.0 which should be fixed to NAN someday.
+      //So let's compare to 0.0 to be sure it is missing and use our own calculation instead.
+      double vmc = rmb.vmg < 0.001 && rmb.vmg > -0.001 ? calcVmc(rmb.btw) : rmb.vmg;
+      struct tETA eta = calcETA(rmb.dtw,vmc);
       double Variation = gps->getVariation();
       double Mbtw = toMagnetic(rmb.btw,Variation);
       double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
       SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
-                          MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,rmb.vmg);
+                          MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,vmc);
       pNMEA2000->SendMsg(N2kMsg);
       trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",
       bod.originID,originID,bod.destID,destinationID,rmb.latitude,rmb.longitude,ArrivalCircleEntered,rmb.vmg,rmb.dtw,Mbtw,MbBod,eta.etaTime,eta.etaDays);
