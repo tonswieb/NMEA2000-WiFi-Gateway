@@ -43,7 +43,7 @@ class N183ToN2k {
 
   private:  
     Gps *gps;
-    double xte = 0; //Keep track of the lat XTE value so we can calculate perpendicular crossed for PGN 129284
+    bool perpendicularCrossed = false;
     //NMEA0183-BOD (Bearing Origin to Destination). Does not conatin enough information to send a NMEA200 message, but contains some elements required for a NMEA2000 message.
     tBOD bod;
     Route* route;
@@ -57,7 +57,7 @@ class N183ToN2k {
     void sendPGN129026(const tN2kHeadingReference ref, const double &COG, const double &SOG);
     void sendPGN129029(const tGGA &gga);
     void sendPGN129283(const tRMB &rmb);
-    void sendPGN129284(const tRMB &rmb, bool perpendicularCrossed);
+    void sendPGN129284(const tRMB &rmb);
     void sendPGN129285();
     void sendPGN129285(const tRMB &rmb);
 
@@ -71,6 +71,7 @@ class N183ToN2k {
     void HandleRTE(const tNMEA0183Msg &NMEA0183Msg);
     void HandleWPL(const tNMEA0183Msg &NMEA0183Msg);
     void HandleGLL(const tNMEA0183Msg &NMEA0183Msg);
+    void HandleAPB(const tNMEA0183Msg &NMEA0183Msg);
     
     tETA calcETA(double dtw, double vmg);
     double calcVmc(double btw);

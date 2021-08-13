@@ -121,7 +121,7 @@ void N183ToN2k::sendPGN129283(const tRMB &rmb) {
  * It always takes the 2nd waypoint from PGN129285 as DestinationWaypoint.
  * Not sure if that is compliant with NMEA2000 or B&G Trition specific.
  */
-void N183ToN2k::sendPGN129284(const tRMB &rmb, bool perpendicularCrossed) {
+void N183ToN2k::sendPGN129284(const tRMB &rmb) {
   
       tN2kMsg N2kMsg;
 
@@ -282,11 +282,8 @@ void N183ToN2k::HandleRMB(const tNMEA0183Msg &NMEA0183Msg) {
 
   tRMB rmb;
   if (NMEA0183ParseRMB(NMEA0183Msg, rmb)  && rmb.status == 'A') {
-    //Calc perpendicularCrossed using the previous received xte and the current xte
-    bool perpendicularCrossed = (xte > 0 && rmb.xte < 0) || (xte < 0 && rmb.xte > 0);
-    xte = rmb.xte;
     sendPGN129283(rmb);
-    sendPGN129284(rmb,perpendicularCrossed);
+    sendPGN129284(rmb);
     sendPGN129285(rmb);
     trace("RMB: XTE=%6.2f, DTW=%6.2f, BTW=%6.2f, VMG=%6.2f, OriginID=%s, DestinationID=%s, Latittude=%6.2f, Longitude=%6.2f",
     rmb.xte,rmb.dtw,rmb.btw,rmb.vmg,rmb.originID,rmb.destID,rmb.latitude,rmb.longitude);
@@ -404,6 +401,22 @@ void N183ToN2k::HandleWPL(const tNMEA0183Msg &NMEA0183Msg) {
   } else { error("WPL: Failed to parse message"); }
 }
 
+/**
+ * Receive NMEA0183 APB message (Auto Pilot B) and store it for later use when the RMB message is received.
+ * Mainly to know if the perpendicular has been crossed at the waypoint.
+ * Could be used to send a PNG 129283 (Cross Track Error), but that message is already send from an RMB message.
+ * Typically navigation systems send the APB, RMB, BOD messages together in a batch. So let's pick what we need and let's not send to many NMEA02000 messages.
+ */
+void N183ToN2k::HandleAPB(const tNMEA0183Msg &NMEA0183Msg) {
+
+  tAPB apb;
+  if (NMEA0183ParseAPB(NMEA0183Msg, apb)  && apb.status == 'A') {
+    perpendicularCrossed = apb.perpendicularPassed == 'A';
+    trace("APB: XTE=%6.2f, BTW =%6.2f, BOD =%6.2f,  ArrivalCircleEntered=%s, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
+  } else if (apb.status == 'V') { warn("APB: Is Void");
+  } else { error("APB: Failed to parse message"); }
+}
+
 /*
  * NMEA0183Msg.IsMessageCode wrapper function using PROGMEM Strings to limited SRAM usage.
  */
@@ -447,6 +460,8 @@ void N183ToN2k::HandleNMEA0183Msg(const tNMEA0183Msg &NMEA0183Msg) {
     HandleHDT(NMEA0183Msg);
   } else if (isMessageCode_P(NMEA0183Msg,PSTR("RTE"))) {
     HandleRTE(NMEA0183Msg);
+  } else if (isMessageCode_P(NMEA0183Msg,PSTR("APB"))) {
+    HandleAPB(NMEA0183Msg);
   }
 } 
 
