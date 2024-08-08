@@ -44,6 +44,7 @@ class MulticastStream : public Stream {
     size_t write(const uint8_t *buffer, size_t size) {
         stream1->write(buffer,size);
         stream2->write(buffer,size);
+        return size;
     }
 };
 #endif
