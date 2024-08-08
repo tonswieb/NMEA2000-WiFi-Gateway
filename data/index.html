@@ -29,7 +29,7 @@
 
     label {
         grid-column: 1 / 2;
-        max-width: 200px;
+        max-width: 400px;
     }
 
     input {
@@ -132,19 +132,22 @@
         </form>
     </div>
     <div id="NMEA0183" class="tabcontent">
+        <h2>NMEA 0183 sources enabled:</h2>
+        <p>NMEA 0183 data is received from all enabled sources below and combined into a sinlge output stream. Except for Serial 2 which is only send to N2K bus.</p>
+        <p>WIFI clients can also send NMEA0183 messages, but these are send to N2K bus directly and not broadcasted to other NMEA0183 destinations.</p>
         <form name="nmeaSettings">
             <!-- Add a dummy element so the form is always populated to work around bug in Webserver library, which cannot handle multiplart forms without any data. -->
             <input type="hidden" id="nmeaSettingsForm" name="nmeaSettingsForm" value="dummy" />
-            <h2>NMEA 0183 sources in use:</h2>
             <label for="nmeaSrcBlGps">Bluetooth GPS</label>
             <input type="checkbox" id="nmeaSrcBlGps" name="nmeaSrcBlGps"/><br>
             <label for="nmeaSrcN2k">N2K bus</label>
             <input type="checkbox" id="nmeaSrcN2k" name="nmeaSrcN2k"/><br>
             <label for="nmeaSrcSerial1">Serial 1 - 38400 bps (AIS)</label>
             <input type="checkbox" id="nmeaSrcSerial1" name="nmeaSrcSerial1"/><br>
-            <label for="nmeaSrcSerial2">Serial 2 - 4800 bps</label>
+            <label for="nmeaSrcSerial2">Serial 2 - 4800 bps (source for N2K bus)</label>
             <input type="checkbox" id="nmeaSrcSerial2" name="nmeaSrcSerial2"/><br>
             <h2>Send NMEA 0183 messages to:</h2>
+            <p>NMEA0183 data from all enabled sources is send to the following enabled destinations.</p>
             <label for="nmeaToSerial">Console</label>
             <input type="checkbox" id="nmeaToSerial" name="nmeaToSerial"/><br>
             <label for="nmeaToSocket">Browser</label>
@@ -153,7 +156,7 @@
             <input type="checkbox" id="nmeaToBl" name="nmeaToBl"/><br>
             <label for="nmeaToUDP">WIFI clients (via UDP)</label>
             <input type="checkbox" id="nmeaToUDP" name="nmeaToUDP"/><br>
-            <label for="nmeaFilter">Filter</label>
+            <label for="nmeaFilter">Filter (NMEA0183 to N2K)</label>
             <input type="text" id="nmeaFilter" name="nmeaFilter"/><br>
             <input type="button" value="Save NMEA Settings" onclick="submitForm(this.form.name)"/>
         </form>
@@ -174,11 +177,161 @@
                 <option value="3">Send (stealth)</option>
                 <option value="4">Receive and Send (stealth)</option>
             </select>
-            <label for="n2kRxFilter">Receive Filter</label>
+            <label for="n2kRxFilter">Receive Filter (Comma Separated List)</label>
             <input type="text" id="n2kRxFilter" name="n2kRxFilter"/><br>
             <input type="button" value="Save" onclick="submitForm(this.form.name)"/>
         </form>
-    </div>
+        <h2>NMEA 2000 Messages mapped to NMEA0183</h2>
+        <p>Add message ID to  <b>receive filter</b> to prevent forwarding to NMEA0183 network.</p>
+        <table>
+            <tr align="left">
+                <th>ID</th>
+                <th>Description</th>
+                <th>NMEA0183 Mapping</th>
+                <th>Mapping remarks</th>
+            </tr>
+            <tr>
+                <td>126992</td>
+                <td>System Time - Days since 1970, seconds since midnight</td>    
+                <td>n/a</td>
+                <td>No mapping. Information stored for later use.</td>
+            </tr>
+            <tr>
+                <td>127250</td>
+                <td>Heading (true or magnetic),Deviation,Variation</td>    
+                <td>HDG</td>
+                <td>Heading converted to true if received in magnetic</td>
+            </tr>
+            <tr>
+                <td>127251</td>
+                <td>Rate of Turn</td>
+                <td>ROT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>127258</td>
+                <td>Days since 1970, Variation</td>    
+                <td>n/a</td>    
+                <td>No mapping. Information stored for later use.</td>    
+            </tr>
+            <tr>
+                <td>128259</td>
+                <td>Boatspeed</td>    
+                <td>VHW</td>    
+                <td>VHW</td>    
+            </tr>
+            <tr>
+                <td>128267</td>
+                <td>Depth, Offset</td>
+                <td>DPT,DBS/DBK</td>
+            </tr>
+            <tr>
+                <td>129025</td>
+                <td>Position - Lat/Lon</td>    
+                <td>GLL</td>
+                <td>Seconds since midnight used from GPS</td>
+            </tr>
+            <tr>
+                <td>129026</td>
+                <td>COG (Magnetic or True), SOG</td>
+                <td>VTG</td>
+                <td>Variation of GPS is used to calculate either true COG or magnetic COG</td>
+            </tr>
+            <tr>
+                <td>129029</td>
+                <td>GNSS - Lat/Lon, Altitude,</td>
+                <td>GGA</td>
+            </tr>
+            <tr>
+                <td>130306</td>
+                <td>Windspeed, WindAngle</td> 
+                <td>MWV</td>
+                <td>True or Apparent</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td> 
+                <td>RMC</td>
+                <td>Lat/Lon, COG, SOG, Variation, days since 1970, seconds since midnight</td>
+            </tr>
+        </table>
+        <h2>NMEA0183 messages mapped to NMEA2000</h2>
+        <p>NMEA0183 messages received from WIFI (UDP/9877) clients or from Serial2 (4800bps) are transferred to N2K bus when a mode is selected that enables sending.</p>
+        <table>
+            <tr align="left">
+                <th>ID</th>
+                <th>Description</th>
+                <th>NMEA2000 Mapping</th>
+                <th>Mapping remarks</th>
+            </tr>
+            <tr>
+                <td>GGA</td>
+                <td></td>
+                <td>129029</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>GGL</td>
+                <td></td>
+                <td>129025</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>RMB</td>
+                <td></td>
+                <td>129283,129284,129285</td>
+                <td>Using data from previously received APB, BOD and XTE messages. The 129285 message contains the current position and the next WP.</td>
+            </tr>
+            <tr>
+                <td>RMC</td>
+                <td></td>
+                <td>129025,129026</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>WPL</td>
+                <td></td>
+                <td></td>
+                <td>Stored for later use until all RTE messages are received.</td>
+            </tr>
+            <tr>
+                <td>BOD</td>
+                <td></td>
+                <td></td>
+                <td>Stored for later use until the RMB message is received.</td>
+            </tr>
+            <tr>
+                <td>VTG</td>
+                <td></td>
+                <td>129026</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>HDT</td>
+                <td></td>
+                <td>127250</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>RTE</td>
+                <td></td>
+                <td></td>
+                <td>Stored for later use until all RTE messages are received.</td>
+            </tr>
+            <tr>
+                <td>APB</td>
+                <td></td>
+                <td></td>
+                <td>Stored for later use for when RMB message is received.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>129285</td>
+                <td>Every 5s in case a valid route based on WPL/RTE message has been received. The 129285 message contains all waypoints of the route from the beginning of the current leg and ahead.</td>
+            </tr>
+        </table>
+</div>
     <div id="Bluetooth" class="tabcontent">
         <h3>Bluetooth</h3>
         <p>Configure bluetooth.</p>
@@ -195,7 +348,8 @@
         <p>Configure wifi. Requires a reset.</p>
         <form name="wifiSettings">
             <h2>General WIFI settings</h2>
-            <label for="wifiUdpPort">WIFI - UDP Broadcast Port</label>
+            <p>Receiving data from WIFI clients is hardcoded at UDP/9877</p>
+            <label for="wifiUdpPort">WIFI - UDP Broadcast Port (default: 9876)</label>
             <input type="number" id="wifiUdpPort" name="wifiUdpPort" min="1025" max="66535"><br>
 
             <label for="wifiStaEnabled">Use WIFI Station</label>
