@@ -442,6 +442,19 @@ void N183ToN2k::HandleNMEA0183Msg(const tNMEA0183Msg &NMEA0183Msg) {
   }
 
   debug("Handling NMEA0183 message %s",NMEA0183Msg.MessageCode());
+
+  if (logger->getLevel() == DEBUG_LEVEL_TRACE) {
+    //We don't have access to the RAW data, so let's reconstruct it from the fields to print it.
+    log(NMEA0183Msg.GetPrefix())
+    log(NMEA0183Msg.Sender());
+    log(NMEA0183Msg.MessageCode());
+    for (int i=0; i < NMEA0183Msg.FieldCount();i++) {
+      log(",");
+      log(NMEA0183Msg.Field(i));
+    }
+    logln();
+  }
+
   if (isMessageCode_P(NMEA0183Msg,PSTR("GGA"))) {
     HandleGGA(NMEA0183Msg);
   } else if (isMessageCode_P(NMEA0183Msg,PSTR("GGL"))) {
