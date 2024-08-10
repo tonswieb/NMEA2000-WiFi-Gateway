@@ -62,7 +62,7 @@ tETA N183ToN2k::calcETA(double dtw, double vmc) {
     double ETA = TTG + GPSTime;
     eta.etaDays = ETA / (3600 * 24);
     eta.etaTime = ETA - eta.etaDays * 3600 * 24; //in seconds
-    trace("calcETA: GPSTime (seconds)=%6.2f, TTG (seconds)=%6.2f, ETA=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",GPSTime,TTG,ETA,eta.etaTime,eta.etaDays);
+    trace("calcETA: GPSTime (seconds)=%6.0f, TTG (seconds)=%6.0f, ETA=%6.0f, ETA (time)=%6.0f, ETA (days)=%i",GPSTime,TTG,ETA,eta.etaTime,eta.etaDays);
   }
   return eta;
 }
@@ -143,7 +143,7 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
       SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
                           MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,vmc);
       pNMEA2000->SendMsg(N2kMsg);
-      trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%6.2f, longitude=%6.2f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%6.2f, BTW (Orign to Desitination)=%6.2f, ETA (time)=%6.2f, ETA (days)=%i",
+      trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%2.6f, longitude=%2.6f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%1.6f, BTW (Orign to Desitination)=%1.6f, ETA (time)=%6.0f, ETA (days)=%i",
       bod.originID,originID,bod.destID,destinationID,rmb.latitude,rmb.longitude,ArrivalCircleEntered,rmb.vmg,rmb.dtw,Mbtw,MbBod,eta.etaTime,eta.etaDays);
 }
 
@@ -176,14 +176,14 @@ void N183ToN2k::sendPGN129285() {
     AppendN2kPGN129285(N2kMsg, 0, "CURRENT", Latitude, Longitude);
     tRouteWaypoint e = route->getWaypoint(0);
     AppendN2kPGN129285(N2kMsg, 1, e.name, e.latitude, e.longitude);
-    trace("129285: CURRENT,%6.2f,%6.2f", Latitude, Longitude);
-    trace("129285: %s,%6.2f,%6.2f",e.name,e.latitude,e.longitude);
+    trace("129285: CURRENT,%2.6f,%2.6f", Latitude, Longitude);
+    trace("129285: %s,%2.6f,%2.6f",e.name,e.latitude,e.longitude);
   } else {
     for (byte i=route->getIndexOriginCurrentLeg(); i < route->getSize(); i++) {
       byte j = i - route->getIndexOriginCurrentLeg();
       tRouteWaypoint e = route->getWaypoint(i);
       //Continue adding waypoints as long as they fit within a single message
-      trace("129285: %s,%6.2f,%6.2f",e.name,e.latitude,e.longitude);
+      trace("129285: %s,%2.6f,%2.6f",e.name,e.latitude,e.longitude);
       if (!AppendN2kPGN129285(N2kMsg, j, e.name, e.latitude, e.longitude)) {
         //Max. nr. of waypoints per message is reached.Send a message with all waypoints upto this one and start constructing a new message.
         pNMEA2000->SendMsg(N2kMsg); 
@@ -212,10 +212,10 @@ void N183ToN2k::sendPGN129285(const tRMB &rmb) {
   double Latitude = gps->getLatitude(); 
   double Longitude = gps->getLongitude();
   SetN2kPGN129285(N2kMsg,0, 1, '1', false, false, "Unknown");
-  AppendN2kPGN129285(N2kMsg, 0, "CURRENT", Latitude, Longitude);
-  AppendN2kPGN129285(N2kMsg, 1, "NEXT", rmb.latitude, rmb.longitude);
-  trace("129285: CURRENT,%6.2f,%6.2f",Latitude,Longitude);
-  trace("129285: NEXT,%6.2f,%6.2f",rmb.latitude,rmb.longitude);
+  AppendN2kPGN129285(N2kMsg, 0, rmb.originID, Latitude, Longitude);
+  AppendN2kPGN129285(N2kMsg, 1, rmb.destID, rmb.latitude, rmb.longitude);
+  trace("129285: %s,%2.6f,%2.6f",rmb.originID,Latitude,Longitude);
+  trace("129285: %s,%2.6f,%2.6f",rmb.destID,rmb.latitude,rmb.longitude);
   pNMEA2000->SendMsg(N2kMsg);       
 }
 
@@ -268,7 +268,7 @@ void N183ToN2k::HandleRMC(const tNMEA0183Msg &NMEA0183Msg) {
     gps->setDaysSince1970(rmc.daysSince1970);
     gps->setVariation(rmc.variation);
     gps->setSecondsSinceMidnight(rmc.GPSTime);
-    trace("RMC: GPSTime=%6.2f, Latitude=%6.2f, Longitude=%6.2f, COG=%6.2f, SOG=%6.2f, DaysSince1970=%u, Variation=%6.2f",
+    trace("RMC: GPSTime=%6.0f, Latitude=%2.6f, Longitude=%2.6f, COG=%1.6f, SOG=%2.2f, DaysSince1970=%u, Variation=%1.6f",
     rmc.GPSTime,rmc.latitude,rmc.longitude,rmc.trueCOG,rmc.SOG,rmc.daysSince1970,rmc.variation);
   } else if (rmc.status == 'V') { warn("RMC: Is Void");
   } else { error("RMC: Failed to parse message"); }
@@ -285,7 +285,7 @@ void N183ToN2k::HandleRMB(const tNMEA0183Msg &NMEA0183Msg) {
     sendPGN129283(rmb);
     sendPGN129284(rmb);
     sendPGN129285(rmb);
-    trace("RMB: XTE=%6.2f, DTW=%6.2f, BTW=%6.2f, VMG=%6.2f, OriginID=%s, DestinationID=%s, Latittude=%6.2f, Longitude=%6.2f",
+    trace("RMB: XTE=%6.2f, DTW=%1.6f, BTW=%1.6f, VMG=%2.2f, OriginID=%s, DestinationID=%s, Latittude=%2.6f, Longitude=%2.6f",
     rmb.xte,rmb.dtw,rmb.btw,rmb.vmg,rmb.originID,rmb.destID,rmb.latitude,rmb.longitude);
   } else if (rmb.status == 'V') { warn("RMB: Is Void");
   } else { error("RMB: Failed to parse message"); }
@@ -298,7 +298,7 @@ void N183ToN2k::HandleGGA(const tNMEA0183Msg &NMEA0183Msg) {
     sendPGN129029(gga);
     gps->setLatLong(gga.latitude,gga.longitude);
     gps->setSecondsSinceMidnight(gga.GPSTime);
-    trace("GGA: Time=%6.2f, Latitude=%6.2f, Longitude=%6.2f, Altitude=%6.2f, GPSQualityIndicator=%u, SatelliteCount=%u, HDOP=%6.2f, GeoidalSeparation=%6.2f, DGPSAge=%6.2f, DGPSReferenceStationID=%u",
+    trace("GGA: Time=%6.0f, Latitude=%2.6f, Longitude=%2.6f, Altitude=%3.2f, GPSQualityIndicator=%u, SatelliteCount=%u, HDOP=%6.2f, GeoidalSeparation=%6.2f, DGPSAge=%6.2f, DGPSReferenceStationID=%u",
     gga.GPSTime,gga.latitude,gga.longitude,gga.altitude,gga.GPSQualityIndicator,gga.satelliteCount,gga.HDOP,gga.geoidalSeparation,gga.DGPSAge,gga.DGPSReferenceStationID);
   } else if (gga.GPSQualityIndicator == 0) { warn("GGA: Invalid GPS fix.");
   } else { error("GGA: Failed to parse message"); }
@@ -311,7 +311,7 @@ void N183ToN2k::HandleGLL(const tNMEA0183Msg &NMEA0183Msg) {
     sendPGN129025(gll.latitude,gll.longitude);
     gps->setLatLong(gll.latitude,gll.longitude);
     gps->setSecondsSinceMidnight(gll.GPSTime);
-    trace("GLL: Time=%6.2f, Latitude=%6.2f, Longitude=%6.2f",gll.GPSTime,gll.latitude,gll.longitude,6,2);
+    trace("GLL: Time=%6.0f, Latitude=%2.6f, Longitude=%2.6f",gll.GPSTime,gll.latitude,gll.longitude);
   } else if (gll.status == 'V') { warn("GLL: Is  Void");
   } else { error("GLL: Failed to parse message"); }
 }
@@ -321,7 +321,7 @@ void N183ToN2k::HandleHDT(const tNMEA0183Msg &NMEA0183Msg) {
   double TrueHeading;
   if (NMEA0183ParseHDT(NMEA0183Msg,TrueHeading)) {
     sendPGN127250(TrueHeading);
-    trace("HDT: True heading=%6.2f",TrueHeading);
+    trace("HDT: True heading=%1.6f",TrueHeading);
   } else { error("HDT: Failed to parse message"); }
 }
 
@@ -333,7 +333,7 @@ void N183ToN2k::HandleVTG(const tNMEA0183Msg &NMEA0183Msg) {
     gps->setSOG(SOG);
     gps->setVariation(COG-MagneticCOG); // Save variation for Magnetic heading
     sendPGN129026(N2khr_true,COG,SOG);
-    trace("VTG: COG=%6.2f",COG);
+    trace("VTG: COG=%1.6f",COG);
   } else { error("VTG: Failed to parse message"); }
 }
 
@@ -344,7 +344,7 @@ void N183ToN2k::HandleVTG(const tNMEA0183Msg &NMEA0183Msg) {
 void N183ToN2k::HandleBOD(const tNMEA0183Msg &NMEA0183Msg) {
 
   if (NMEA0183ParseBOD(NMEA0183Msg,bod)) {
-    trace("BOD: True heading=%6.2f, Magnetic heading=%6.2f, Origin ID=%s, Dest ID=%s",bod.trueBearing,bod.magBearing,bod.originID,bod.destID);
+    trace("BOD: True heading=%1.6f, Magnetic heading=%1.6f, Origin ID=%s, Dest ID=%s",bod.trueBearing,bod.magBearing,bod.originID,bod.destID);
   } else { error("BOD: Failed to parse message"); }
 }
 
@@ -412,7 +412,7 @@ void N183ToN2k::HandleAPB(const tNMEA0183Msg &NMEA0183Msg) {
   tAPB apb;
   if (NMEA0183ParseAPB(NMEA0183Msg, apb)  && apb.status == 'A') {
     perpendicularCrossed = apb.perpendicularPassed == 'A';
-    trace("APB: XTE=%6.2f, BTW =%6.2f, BOD =%6.2f,  ArrivalCircleEntered=%c, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
+    trace("APB: XTE=%6.2f, BTW =%1.6f, BOD =%1.6f,  ArrivalCircleEntered=%c, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
   } else if (apb.status == 'V') { warn("APB: Is Void");
   } else { error("APB: Failed to parse message"); }
 }
