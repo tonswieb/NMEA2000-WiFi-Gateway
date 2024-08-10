@@ -17,7 +17,7 @@ Author: Ton Swieb
 #include <Arduino.h>
 #include <stdarg.h>
 
-#define BUFFER_LENGTH 128
+#define BUFFER_LENGTH 256
 
 class PrintfWrapper {
 
