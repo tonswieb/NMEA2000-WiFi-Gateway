@@ -139,7 +139,12 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
       struct tETA eta = calcETA(rmb.dtw,vmc);
       double Variation = gps->getVariation();
       double Mbtw = toMagnetic(rmb.btw,Variation);
-      double MbBod = fabs(bod.magBearing - NMEA0183DoubleNA) > 1.0 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
+      //Max BOD in rad is 6.283185, but NaN is defined as -1E09. So checking smaller then 6.3 should be OK.
+      //TODO: Store BOD as part of APB as well. APB contains BOD in in True.
+      double MbBod = fabs(bod.magBearing) < 6.3 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
+      if (fabs(MbBod) > 6.3) {
+        MbBod = N2kDoubleNA;
+      }
       bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
       SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
                           MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,vmc);
