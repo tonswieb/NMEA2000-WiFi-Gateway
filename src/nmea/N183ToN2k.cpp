@@ -54,6 +54,7 @@ tETA N183ToN2k::calcETA(double dtw, double vmc) {
   
   //Disable ETA/TTG when vmg is too small or missing
   if (isnan(vmc) || isnan(dtw) || vmc < 0.01) {
+    eta.etaTime = N2kDoubleNA;
     eta.etaDays = ULONG_MAX;
     trace("Skip calculating ETA. VMC < 0.01 or VMC/DTW is missing.")
   } else {
