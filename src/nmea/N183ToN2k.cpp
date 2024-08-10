@@ -412,7 +412,7 @@ void N183ToN2k::HandleAPB(const tNMEA0183Msg &NMEA0183Msg) {
   tAPB apb;
   if (NMEA0183ParseAPB(NMEA0183Msg, apb)  && apb.status == 'A') {
     perpendicularCrossed = apb.perpendicularPassed == 'A';
-    trace("APB: XTE=%6.2f, BTW =%6.2f, BOD =%6.2f,  ArrivalCircleEntered=%s, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
+    trace("APB: XTE=%6.2f, BTW =%6.2f, BOD =%6.2f,  ArrivalCircleEntered=%c, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
   } else if (apb.status == 'V') { warn("APB: Is Void");
   } else { error("APB: Failed to parse message"); }
 }
