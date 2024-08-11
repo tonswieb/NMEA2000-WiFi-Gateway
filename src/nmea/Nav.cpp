@@ -151,10 +151,10 @@ tETA Nav::calcETA() {
   double vmc = getVmg();
 
   //Disable ETA/TTG when vmg is too small or missing
-  if (isnan(vmc) || isnan(dtw) || vmc < 0.01) {
+  if (isnan(vmc) || isnan(dtw) || vmc < 0.1) {
     eta.etaTime = N2kDoubleNA;
     eta.etaDays = N2kInt16NA;
-    trace("calcETA: Skip calculating ETA. VMC < 0.01 or VMC/DTW is missing.")
+    trace("calcETA: Skip calculating ETA. VMC < 0.1 or VMC/DTW is missing.")
   } else {
     double TTG = dtw / vmc;
     double GPSTime = gps->getSecondsSinceMidnight();
