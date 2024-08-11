@@ -16,8 +16,6 @@ Author: Timo Lappalainen, Ton Swieb
 #include "N183ToN2k.h"
 #include <math.h>
 
-#define PI_2 6.283185307179586476925286766559
-
 tN2kGNSSmethod GNSMethofNMEA0183ToN2k(int Method) {
   switch (Method) {
     case 0: return N2kGNSSm_noGNSS;
@@ -27,53 +25,13 @@ tN2kGNSSmethod GNSMethofNMEA0183ToN2k(int Method) {
   }
 }
 
-double toMagnetic(double True, double Variation) {
-
-  double magnetic=True-Variation;
-  while (magnetic<0) magnetic+=PI_2;
-  while (magnetic>=PI_2) magnetic-=PI_2;
-  return magnetic;    
-}
-
-double N183ToN2k::calcVmc(double btw) {
-
-  double cog = gps->getCOG();
-  double sog = gps->getSOG();
-  if (isnan(sog) || isnan(cog) || sog < 0.01) {
-    return NAN;
-  }
-  return sog * cos(btw - cog); //Velocity Made good on Course
-}
-
-/**
- *  dtw in meters, vmc in meters/second
- */
-tETA N183ToN2k::calcETA(double dtw, double vmc) {
-
-  struct tETA eta;
-  
-  //Disable ETA/TTG when vmg is too small or missing
-  if (isnan(vmc) || isnan(dtw) || vmc < 0.01) {
-    eta.etaTime = N2kDoubleNA;
-    eta.etaDays = ULONG_MAX;
-    trace("Skip calculating ETA. VMC < 0.01 or VMC/DTW is missing.")
-  } else {
-    double TTG = dtw / vmc;
-    double GPSTime = gps->getSecondsSinceMidnight();
-    double ETA = TTG + GPSTime;
-    eta.etaDays = ETA / (3600 * 24);
-    eta.etaTime = ETA - eta.etaDays * 3600 * 24; //in seconds
-    trace("calcETA: GPSTime (seconds)=%6.0f, TTG (seconds)=%6.0f, ETA=%6.0f, ETA (time)=%6.0f, ETA (days)=%i",GPSTime,TTG,ETA,eta.etaTime,eta.etaDays);
-  }
-  return eta;
-}
-
 N183ToN2k::N183ToN2k(tNMEA2000* pNMEA2000, Gps *gps, Stream* nmea0183, Logger* logger, N2KPreferences* prefs, byte maxWpPerRoute, byte maxWpNameLength) {
 
   this->prefs = prefs;
   this->logger = logger;
   this->pNMEA2000 = pNMEA2000;
   this->gps = gps;
+  this->nav = new Nav(gps,logger);
   route = new Route(maxWpPerRoute, maxWpNameLength, logger);
   info("Initializing NMEA0183 communication. Make sure the NMEA device uses the same baudrate.");
   NMEA0183.SetMessageStream(nmea0183);
@@ -92,10 +50,18 @@ void N183ToN2k::handleLoop() {
     HandleNMEA0183Msg(NMEA0183Msg);
   }
   
+  //Send PGN's after the batch of NMEA0183 is processed. Nav data should be updated.
+  if (nav->isValid()) {
+    sendPGN129283();
+    sendPGN129284();
+    sendPGN129285();
+    nav->reset(); //Reset to prevent resending the same data.
+  }
+
   static unsigned long timeUpdated=millis();
   if (timeUpdated+5000 < millis()) {
     timeUpdated=millis();
-    sendPGN129285();
+    sendPGN129285Route();
   }
 }
 
@@ -104,10 +70,10 @@ void N183ToN2k::handleLoop() {
  * Category: Navigation
  * This PGN provides the magnitude of position error perpendicular to the desired course.
  */
-void N183ToN2k::sendPGN129283(const tRMB &rmb) {
+void N183ToN2k::sendPGN129283() {
 
   tN2kMsg N2kMsg;
-  SetN2kXTE(N2kMsg,1,N2kxtem_Autonomous, false, rmb.xte);
+  SetN2kXTE(N2kMsg,1,N2kxtem_Autonomous, false, nav->getXte());
   pNMEA2000->SendMsg(N2kMsg);
 }
 
@@ -117,40 +83,43 @@ void N183ToN2k::sendPGN129283(const tRMB &rmb) {
  * This PGN provides essential navigation data for following a route.Transmissions will originate from products that can create and manage routes using waypoints. This information is intended for navigational repeaters. 
  * 
  * Send the navigation information of the current leg of the route.
- * With long routes from NMEA0183 GPS systems it can take a while before a PGN129285 can be sent. So the display value of originID or destinationID might not always be available.
  * B&G Trition ignores OriginWaypointNumber and DestinationWaypointNumber values in this message.
  * It always takes the 2nd waypoint from PGN129285 as DestinationWaypoint.
  * Not sure if that is compliant with NMEA2000 or B&G Trition specific.
  */
-void N183ToN2k::sendPGN129284(const tRMB &rmb) {
-  
+void N183ToN2k::sendPGN129284() {
+      //PGN129285 only gives route/wp data ahead in the Active Route. So originID will always be 0 and destinationID will always be 1.
+      //Unclear why these ID's need to be set in PGN129284. Needed on B&G Triton displays other values are ignored anyway.      
+      struct tETA eta = nav->calcETA();
       tN2kMsg N2kMsg;
-
-      /*
-       * PGN129285 only gives route/wp data ahead in the Active Route. So originID will always be 0 and destinationID will always be 1.
-       * Unclear why these ID's need to be set in PGN129284. On B&G Triton displays other values are ignored anyway.
-       */
-      int originID=0;
-      int destinationID=originID+1;
-      
-      //iSailor omits VMG in RMB message. NMEA0183 library initiallizes missing doubles to 0.0 which should be fixed to NAN someday.
-      //So let's compare to 0.0 to be sure it is missing and use our own calculation instead.
-      double vmc = rmb.vmg < 0.001 && rmb.vmg > -0.001 ? calcVmc(rmb.btw) : rmb.vmg;
-      struct tETA eta = calcETA(rmb.dtw,vmc);
-      double Variation = gps->getVariation();
-      double Mbtw = toMagnetic(rmb.btw,Variation);
-      //Max BOD in rad is 6.283185, but NaN is defined as -1E09. So checking smaller then 6.3 should be OK.
-      //TODO: Store BOD as part of APB as well. APB contains BOD in in True.
-      double MbBod = fabs(bod.magBearing) < 6.3 ? bod.magBearing : toMagnetic(bod.trueBearing,Variation);
-      if (fabs(MbBod) > 6.3) {
-        MbBod = N2kDoubleNA;
-      }
-      bool ArrivalCircleEntered = rmb.arrivalAlarm == 'A';
-      SetN2kNavigationInfo(N2kMsg,1,rmb.dtw,N2khr_magnetic,perpendicularCrossed,ArrivalCircleEntered,N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
-                          MbBod,Mbtw,originID,destinationID,rmb.latitude,rmb.longitude,vmc);
+      double vmg = nav->getVmg(); //Is calculated if not present in Nav data. So let's retrieve it only once.
+      SetN2kNavigationInfo(N2kMsg,1,nav->getDtw(),N2khr_magnetic,nav->isPerpendicularCrossed(),nav->isArrivalCircleEntered(),N2kdct_RhumbLine,eta.etaTime,eta.etaDays,
+                          nav->getBotwMagnetic(),nav->getBtwMagnetic(),0,1,nav->getLatitude(),nav->getLongitude(),vmg);
       pNMEA2000->SendMsg(N2kMsg);
-      trace("129284: originID=%s,%u, destinationID=%s,%u, latitude=%2.6f, longitude=%2.6f, ArrivalCircleEntered=%u, VMG=%6.2f, DTW=%6.2f, BTW (Current to Destination)=%1.6f, BTW (Orign to Desitination)=%1.6f, ETA (time)=%6.0f, ETA (days)=%i",
-      bod.originID,originID,bod.destID,destinationID,rmb.latitude,rmb.longitude,ArrivalCircleEntered,rmb.vmg,rmb.dtw,Mbtw,MbBod,eta.etaTime,eta.etaDays);
+      trace("129284: originID=%s, destinationID=%s, latitude=%3.6f, longitude=%3.6f, ArrivalCircleEntered=%c, VMG=%3.1f, DTW=%3.3f, BTW (Current to Destination)=%2.6f, BTW (Orign to Desitination)=%2.6f, ETA (time)=%6.0f, ETA (days)=%i",
+      nav->getOriginId(),nav->getDestinationId(),nav->getLatitude(),nav->getLongitude(),nav->isArrivalCircleEntered() ? 'T' : 'F',vmg,nav->getDtw(),nav->getBtwMagnetic(),nav->getBotwMagnetic(),eta.etaTime,eta.etaDays);
+}
+
+/**
+ * 129285 - Navigation - Route/WP information
+ * Category: Navigation
+ * This PGN shall return Route and WP data ahead in the Active Route. It can be requested or may be transmitted without a request, typically at each Waypoint advance. 
+ * 
+ * For navigation systems that do not send RTE and WPL messages, like iSailor.
+ * Let's create a route from RMB message with the current position and next waypoint.
+ */
+void N183ToN2k::sendPGN129285() {
+
+  tN2kMsg N2kMsg;
+  //TODO: Check if lat/lon is valid before trying to send N2K message
+  double Latitude = gps->getLatitude(); 
+  double Longitude = gps->getLongitude();
+  SetN2kPGN129285(N2kMsg,0, 1, '1', false, false, "Unknown");
+  AppendN2kPGN129285(N2kMsg, 0, nav->getOriginId(), Latitude, Longitude);
+  AppendN2kPGN129285(N2kMsg, 1, nav->getDestinationId(), nav->getLatitude(), nav->getLongitude());
+  trace("129285: %s,%2.6f,%2.6f",nav->getOriginId(),Latitude,Longitude);
+  trace("129285: %s,%2.6f,%2.6f",nav->getDestinationId(),nav->getLatitude(),nav->getLongitude());
+  pNMEA2000->SendMsg(N2kMsg);       
 }
 
 /**
@@ -161,7 +130,7 @@ void N183ToN2k::sendPGN129284(const tRMB &rmb) {
  * Send the active route with all waypoints from the origin of the current leg and onwards.
  * So the waypoint that corresponds with the originID from the BOD message should be the 1st. The destinationID from the BOD message should be the 2nd. Etc.
  */
-void N183ToN2k::sendPGN129285() {
+void N183ToN2k::sendPGN129285Route() {
 
   if (!route->isValid()) {
     debug("Skip sending PGN129285, route is not complete yet.");
@@ -203,29 +172,6 @@ void N183ToN2k::sendPGN129285() {
   pNMEA2000->SendMsg(N2kMsg);       
 }
 
-/**
- * 129285 - Navigation - Route/WP information
- * Category: Navigation
- * This PGN shall return Route and WP data ahead in the Active Route. It can be requested or may be transmitted without a request, typically at each Waypoint advance. 
- * 
- * For navigation systems that do not send RTE and WPL messages, like iSailor.
- * Let's create a route from RMB message with the current position and next waypoint.
- */
-void N183ToN2k::sendPGN129285(const tRMB &rmb) {
-
-  tN2kMsg N2kMsg;
-  //TODO: Check if lat/lon is valid before trying to send N2K message
-  double Latitude = gps->getLatitude(); 
-  double Longitude = gps->getLongitude();
-  SetN2kPGN129285(N2kMsg,0, 1, '1', false, false, "Unknown");
-  AppendN2kPGN129285(N2kMsg, 0, rmb.originID, Latitude, Longitude);
-  AppendN2kPGN129285(N2kMsg, 1, rmb.destID, rmb.latitude, rmb.longitude);
-  trace("129285: %s,%2.6f,%2.6f",rmb.originID,Latitude,Longitude);
-  trace("129285: %s,%2.6f,%2.6f",rmb.destID,rmb.latitude,rmb.longitude);
-  pNMEA2000->SendMsg(N2kMsg);       
-}
-
-
 void N183ToN2k::sendPGN129029(const tGGA &gga) {
   
     tN2kMsg N2kMsg;
@@ -254,7 +200,7 @@ void N183ToN2k::sendPGN127250(const double &trueHeading) {
 
     tN2kMsg N2kMsg;
     double Variation = gps->getVariation();
-    double MHeading = toMagnetic(trueHeading,Variation);
+    double MHeading = trueToMagnetic(trueHeading,Variation);
     SetN2kMagneticHeading(N2kMsg,1,MHeading,0,Variation);
     pNMEA2000->SendMsg(N2kMsg);
 }
@@ -265,7 +211,7 @@ void N183ToN2k::HandleRMC(const tNMEA0183Msg &NMEA0183Msg) {
   tRMC rmc;
   if (NMEA0183ParseRMC(NMEA0183Msg,rmc) && rmc.status == 'A') {
     tN2kMsg N2kMsg;
-    double MCOG = toMagnetic(rmc.trueCOG,rmc.variation);
+    double MCOG = trueToMagnetic(rmc.trueCOG,rmc.variation);
     sendPGN129026(N2khr_magnetic,MCOG,rmc.SOG);
     sendPGN129025(rmc.latitude,rmc.longitude);
     gps->setCOG(rmc.trueCOG);
@@ -288,9 +234,15 @@ void N183ToN2k::HandleRMB(const tNMEA0183Msg &NMEA0183Msg) {
 
   tRMB rmb;
   if (NMEA0183ParseRMB(NMEA0183Msg, rmb)  && rmb.status == 'A') {
-    sendPGN129283(rmb);
-    sendPGN129284(rmb);
-    sendPGN129285(rmb);
+    nav->setArrivalCircleEntered(rmb.arrivalAlarm == 'A');
+    nav->setBtw(rmb.btw, false); //BTW from RMB is always in true.
+    nav->setDestinationId(rmb.destID);    
+    nav->setDtw(rmb.dtw);
+    nav->setXte(rmb.xte);
+    nav->setLatLong(rmb.latitude,rmb.longitude);
+    nav->setOriginId(rmb.originID);
+    nav->setVmg(rmb.vmg);
+
     trace("RMB: XTE=%6.2f, DTW=%1.6f, BTW=%1.6f, VMG=%2.2f, OriginID=%s, DestinationID=%s, Latittude=%2.6f, Longitude=%2.6f",
     rmb.xte,rmb.dtw,rmb.btw,rmb.vmg,rmb.originID,rmb.destID,rmb.latitude,rmb.longitude);
   } else if (rmb.status == 'V') { warn("RMB: Is Void");
@@ -349,7 +301,14 @@ void N183ToN2k::HandleVTG(const tNMEA0183Msg &NMEA0183Msg) {
  */
 void N183ToN2k::HandleBOD(const tNMEA0183Msg &NMEA0183Msg) {
 
+  tBOD bod;
   if (NMEA0183ParseBOD(NMEA0183Msg,bod)) {
+    //First set magnetic BOTW because it requires transformation and is sometimes missing.
+    //Then override with true BOTW if present. So either one of the 2 is set with a preference for true.
+    nav->setBotw(bod.magBearing, true);
+    nav->setBotw(bod.trueBearing, false);
+    nav->setOriginId(bod.originID);
+    nav->setDestinationId(bod.destID);
     trace("BOD: True heading=%1.6f, Magnetic heading=%1.6f, Origin ID=%s, Dest ID=%s",bod.trueBearing,bod.magBearing,bod.originID,bod.destID);
   } else { error("BOD: Failed to parse message"); }
 }
@@ -386,7 +345,7 @@ void N183ToN2k::HandleRTE(const tNMEA0183Msg &NMEA0183Msg) {
     }
 
     if (rte.currSentence == rte.nrOfsentences) {
-      route->finalize(rte.type,bod.originID);
+      route->finalize(rte.type,nav->getOriginId());
       //Sending PGN129285 is handled from a timer.
     }
     trace("RTE: Time=%u, Nr of sentences=%u, Current sentence=%u, Type=%s, Route ID=%u",millis(),rte.nrOfsentences,rte.currSentence,rte.type,rte.routeID);
@@ -417,7 +376,12 @@ void N183ToN2k::HandleAPB(const tNMEA0183Msg &NMEA0183Msg) {
 
   tAPB apb;
   if (NMEA0183ParseAPB(NMEA0183Msg, apb)  && apb.status == 'A') {
-    perpendicularCrossed = apb.perpendicularPassed == 'A';
+    nav->setBotw(apb.botw,apb.botwMode == 'M');
+    nav->setBtw(apb.btw, apb.btwMode == 'M');
+    nav->setHdt(apb.headingToSteer, apb.headingToSteerMode == 'M');
+    nav->setXte(apb.xte);
+    nav->setperpendicularCrossed(apb.perpendicularPassed == 'A');
+    nav->setArrivalCircleEntered(apb.arrivalAlarm == 'A');    
     trace("APB: XTE=%6.2f, BTW =%1.6f, BOD =%1.6f,  ArrivalCircleEntered=%c, DestinationID=%s", apb.xte,apb.btw,apb.botw,apb.perpendicularPassed,apb.destID);
   } else if (apb.status == 'V') { warn("APB: Is Void");
   } else { error("APB: Failed to parse message"); }
