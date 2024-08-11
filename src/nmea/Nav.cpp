@@ -6,8 +6,6 @@
   }
 
   bool Nav::isValid() {
-    // trace("nav: latitude=%3.6f, longitude=%3.6f, btw=%2.6f, botw=%2.6f, hdt=%2.6f, dtw=%6.0f, vmg=%3.5f, arrival=%c, pendicular=%c, originID=%s, destID=%s"
-    // ,getLatitude(),getlongitude(),getBtwTrue,botw,hdt,dtw,vmg, arrivalCircleEntered? 'T' : 'F', perpendicularCrossed? 'T' : 'F',originID, destID);
     return !isnan(latitude) && !isnan(longitude) && !isnan(btw) && !isnan(botw) && !isnan(crossTrackError);
   }
 
@@ -24,10 +22,6 @@
     perpendicularCrossed = false;
   }
 
-  /**
-   * Set Lat/Lon of destination, if valid.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setLatLong(double latitude, double longitude) {
       if (isNMEA0183NaN(latitude) || isNMEA0183NaN(longitude)) {
         return false;
@@ -42,11 +36,6 @@
   double Nav::getLongitude() {
       return isnan(longitude) ? N2kDoubleNA : longitude;
   }
-  /**
-   * Set BTW, bearing from current position to destination, if valid. Either in 
-   * magnetic or true.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setBtw(double btw, bool magnetic) {
     if (isNMEA0183NaN(btw)) {
         return false;
@@ -60,11 +49,6 @@
   double Nav::getBtwTrue(){
     return isnan(btw) ? N2kDoubleNA : btw;
   }
-  /**
-   * Set BOTW, bearing from origin to destination, if valid. Either in 
-   * magnetic or true.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setBotw(double botw, bool magnetic) {
     if (isNMEA0183NaN(botw)) {
         return false;
@@ -78,11 +62,6 @@
   double Nav::getBotwTrue() {
     return isnan(botw) ? N2kDoubleNA : botw;
   }
-  /**
-   * Set HDT, heading to steer, if valid. Either in 
-   * magnetic or true.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setHdt(double hdt, bool magnetic) {
     if (isNMEA0183NaN(hdt)) {
         return false;
@@ -96,10 +75,6 @@
   double Nav::getHdtTrue(){
     return isnan(hdt) ? N2kDoubleNA : hdt;
   }
-  /**
-   * Set DTW, distance to waypoint, if valid.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setDtw(double dtw) {
     if (isNMEA0183NaN(dtw)) {
         return false;
@@ -110,10 +85,6 @@
   double Nav::getDtw() {
     return isnan(dtw) ? N2kDoubleNA : dtw;
   }
-  /**
-   * Set VMG, velocity made good to waypoint, if valid.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setVmg(double vmg) {
     if (isNMEA0183NaN(vmg)) {
         return false;
@@ -121,10 +92,6 @@
     this->vmg = vmg;
     return true;
   }
-  /**
-   * Get VMG either directly as received from navigation data or otherwise calculate it
-   * based on GPS data and BTW.
-   */
   double Nav::getVmg() {
     return isnan(vmg) ? calcVmg() : vmg;
   }
@@ -153,10 +120,6 @@
   char* Nav::getDestinationId() {
     return destID;
   }
-  /**
-   * Set XTE, cross tracke error, if valid.
-   * return <b>true></b> if valid, <b>false</b> otherwise.
-   */
   bool Nav::setXte(double xte) {
     if (isNMEA0183NaN(xte)) {
         return false;
@@ -168,12 +131,10 @@
     return isnan(crossTrackError) ? N2kDoubleNA : crossTrackError;
   }
 
-/**
- * Calculate VMG to destination waypoint based on GPS data (COG/SOG) and BTW.
- */
 double Nav::calcVmg() {
 
   double cog = gps->getCOG();
+  //TODO: Verify is SOG in m/s, because VMG from RMB message is.
   double sog = gps->getSOG();
   if (isnan(btw) || isnan(sog) || isnan(cog) || sog < 0.01) {
     trace("calcVmg: Skip calculating VMG. Either BTW, SOG or COG is NAN or SOG too small")
@@ -184,11 +145,6 @@ double Nav::calcVmg() {
   trace("calcVmg: VMG=%3.4f, SOG=%3.4f, COG=%2.6f, BTW=%2.6f",vmg, sog, cog, btw);
   return vmg;
 }
-
-/**
- * Calculate Estimated Time of Arrival (ETA) based on DTW (meters) / VMG (meters/second).
- * Set ETA to NaN in case either VMG is missing, too small or DTW is missing.
- */
 tETA Nav::calcETA() {
 
   struct tETA eta;

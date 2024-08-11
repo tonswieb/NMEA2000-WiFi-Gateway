@@ -11,29 +11,26 @@
 
 
 struct tETA {
-  //ETA is relative to GMT (UTC). At least at B&G Triton2.
-  //So need to apply a localtime offset in case the repeater is configured with a localtime offset as well.
-
-  //Nr of days to go. Use a max number to display --:-- on B&G Triton
-  long etaDays = LONG_MAX;
+  //Nr of days to go until arrival
+  long etaDays = N2kInt16NA;
   //ETA Time is second sinds midnight in UTC. 
-  double etaTime = 0;
+  double etaTime = N2kDoubleNA;
 };
 
 /**
- * Holds the information received from a navigation device (plotter) in NMEA0183 format.
- * Navigation devices about different sentences, APB, XTE, BOD, RMB with a differing subsets 
- * of data. This class holds and normalizes this data so it can be used to periodically send 
+ * Holds the information received from a navigation device (plotter).
+ * This class holds and normalizes this data so it can be used to periodically send 
  * NMEA2000 navigation messages.
+ * Navigation devices use sentences like: APB, XTE, BOD, RMB, but it is device depended which messages 
+ * they send and per message if all fields are set.
+ * For example:
+ * iSailor can send APB, BOD, BWC, BWR, HSC, RMB, RMC and XTE messages.
+ * qtvlm omits only APB, RMB and XTE messages.
+ * iSailor omits BOD message with only true BOD, so omitting magnetic BOD.
+ * iSailor omits RMB message without VMG and the precision of DTW is limited to 1 decimal NM, so 185 meters.
+ * of data. 
  */
-
-//iSailor omits BOD Magnetic in BOD message. So compare to a value bigger to check for NaN.
-//iSailor omits VMG in RMB message. So compare to a big value to check for NaN.
-
 class Nav {
-
-public:
-  const static int EXPERIATION_IN_MILLIS = 1000;
 
 protected:
   Logger* logger;
@@ -63,25 +60,60 @@ protected:
   char destID[NMEA0183_MAX_WP_NAME_LENGTH];
   //Cross Track error - nautical miles
   double crossTrackError = NAN;
+  //Calculate VMG to destination waypoint based on GPS data (COG/SOG) and BTW.
   double calcVmg();
 
 public:
   Nav(Gps *gps, Logger* logger);
+  /**
+   * Set Lat/Lon of destination, if valid.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setLatLong(double latitude, double longitude);
   double getLatitude();
   double getLongitude();
+  /**
+   * Set BTW, bearing from current position to destination, if valid. Either in 
+   * magnetic or true.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setBtw(double btw, bool magnetic);
   double getBtwMagnetic();
   double getBtwTrue();
+  /**
+   * Set BOTW, bearing from origin to destination, if valid. Either in 
+   * magnetic or true.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setBotw(double botw, bool magnetic);
   double getBotwMagnetic();
   double getBotwTrue();
+  /**
+   * Set HDT, heading to steer, if valid. Either in 
+   * magnetic or true.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setHdt(double hdt, bool magnetic);
   double getHdtwMagnetic();
   double getHdtTrue();
+  /**
+   * Set DTW, distance to waypoint (meters), if valid.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setDtw(double dtw);
+  /**
+   * Get the DTW, distance to waypoint (meters) or N2K_NA in case it is not set..
+   */
   double getDtw();
+  /**
+   * Set VMG (m/s), velocity made good to waypoint, if valid.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setVmg(double vmg);
+  /**
+   * Get VMG (m/s) either directly as received from navigation data or otherwise calculate it
+   * based on GPS data and BTW.
+   */
   double getVmg();
   void setArrivalCircleEntered(bool arrivalCircleEntered);
   bool isArrivalCircleEntered();
@@ -91,8 +123,19 @@ public:
   char* getOriginId();
   void setDestinationId(const char* destinationId);
   char* getDestinationId();
+  /**
+   * Set XTE, cross tracke error, if valid, including direction to steer.
+   * The direction to steer is left for xte < 0 and right for xte > 0.
+   * return <b>true></b> if valid, <b>false</b> otherwise.
+   */
   bool setXte(double xte);
   double getXte();
+  /**
+   * Calculate Estimated Time of Arrival (ETA) based on DTW (meters) / VMG (meters/second).
+   * Set ETA to NaN in case either VMG is missing, too small or DTW is missing.
+   * ETA is relative to GMT (UTC). At least at B&G Triton2.
+   * So need to apply a localtime offset in case the repeater is configured with a localtime offset as well.
+   */
   tETA calcETA();
 
   /**
