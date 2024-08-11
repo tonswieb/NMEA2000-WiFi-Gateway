@@ -17,7 +17,5 @@ double trueToMagnetic(double trueValue, double variation) {
 }
 
 bool isNMEA0183NaN(double value) {
-    //NMEA0183 NaN is -1E09, but is sometimes converted to a lower value due to 
-    //conversion. So need to choose something big enough, but smaller then NMEA0183 NaN.
-    return fabs(value) > 1000;
+    return value==NMEA0183DoubleNA;
 }

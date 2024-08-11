@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <math.h>
+#include <NMEA0183Msg.h>
 
 #define PI_2 6.283185307179586476925286766559
 
